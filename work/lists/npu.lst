@@ -1,0 +1,3 @@
+../rtl/booth_radix4.sv
+../rtl/npu.sv
+../tb/tb_npu.sv

@@ -1,0 +1,118 @@
+s1(06May2026:18:24:28):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s2(06May2026:18:27:59):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s3(06May2026:18:28:15):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s4(06May2026:18:59:01):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui "-s " 
+s5(07May2026:21:31:50):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tbs/tb_stack.sv -top tb_stack -gui 
+s6(07May2026:21:32:36):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui 
+s7(07May2026:21:32:58):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui 
+s8(07May2026:22:05:40):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui "-s " 
+s9(07May2026:22:08:17):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui -s 
+s10(07May2026:22:10:41):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui -s 
+s11(07May2026:22:11:50):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/neuron_stack.sv ../tb/tb_stack.sv -top tb_stack -gui -s 
+s12(08May2026:13:46:53):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s13(08May2026:13:49:31):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s14(08May2026:13:49:40):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s15(08May2026:13:49:49):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s16(08May2026:13:50:15):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s17(08May2026:13:51:13):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui 
+s18(08May2026:13:53:53):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui "-s " 
+s19(08May2026:13:58:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui -s 
+s20(08May2026:14:15:24):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui -s 
+s21(08May2026:14:15:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui -s 
+s22(08May2026:14:17:40):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_8b.sv ../tb/tb_booth8b.sv -top tb_booth8b -gui -s 
+s23(08May2026:14:18:27):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_radix4.sv ../tb/tb_booth.sv -top tb_booth -gui 
+s24(08May2026:14:24:32):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_radix4.sv ../tb/tb_booth.sv -top tb_booth -gui 
+s25(08May2026:14:24:50):  xrun -sv -64 -access +rwc -timescale 1ns/1ns ../rtl/booth_radix4.sv ../tb/tb_booth.sv -top tb_booth -gui 
+s26(08May2026:15:40:16):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui 
+s27(08May2026:15:41:26):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui 
+s28(08May2026:15:45:48):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui 
+s29(08May2026:15:46:15):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui 
+s30(08May2026:15:56:11):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui 
+s31(08May2026:16:02:20):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui "-s " 
+s32(08May2026:16:39:34):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui -s 
+s33(08May2026:16:44:12):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f npu.lst -top tb_npu -gui -s 
+s34(11May2026:17:29:20):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s35(11May2026:17:30:17):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s36(11May2026:17:30:31):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s37(11May2026:17:32:59):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s38(11May2026:17:35:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s39(11May2026:17:37:53):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s40(11May2026:17:40:12):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s41(11May2026:17:41:20):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s42(11May2026:17:41:36):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s43(11May2026:18:18:02):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui "-s " 
+s44(11May2026:18:20:32):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s45(11May2026:18:22:15):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s46(11May2026:18:22:39):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s47(11May2026:18:23:35):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s48(11May2026:18:24:37):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s49(11May2026:18:25:16):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui -s 
+s50(12May2026:11:52:03):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui 
+s51(12May2026:11:56:49):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f core.lst -top tb_core -gui "-s " 
+s52(18May2026:21:01:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s53(18May2026:21:02:11):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s54(18May2026:21:02:52):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s55(18May2026:21:03:03):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s56(18May2026:21:03:31):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s57(18May2026:21:04:48):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s58(18May2026:21:22:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui "-s " 
+s59(18May2026:21:23:29):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s60(18May2026:21:29:12):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s61(18May2026:21:41:58):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s62(19May2026:09:11:05):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s63(19May2026:09:14:55):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s64(19May2026:09:16:29):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui "-s " 
+s65(19May2026:09:17:09):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s66(19May2026:09:17:22):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s67(19May2026:09:17:44):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s68(19May2026:09:19:02):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s69(19May2026:09:28:03):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s70(19May2026:09:31:14):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s71(19May2026:09:33:14):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s72(19May2026:10:18:22):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s73(19May2026:10:18:32):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s74(19May2026:10:23:17):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s75(19May2026:10:24:06):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s76(19May2026:10:24:10):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s77(19May2026:10:24:23):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s78(19May2026:11:05:52):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s79(19May2026:11:06:12):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s80(19May2026:11:07:44):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s81(19May2026:11:08:16):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s82(19May2026:11:08:48):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s83(19May2026:11:09:11):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s84(19May2026:11:10:16):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s85(19May2026:11:11:37):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s86(19May2026:11:14:18):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s87(19May2026:11:15:55):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s88(19May2026:11:17:01):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s89(19May2026:11:18:40):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s90(19May2026:11:19:45):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s91(19May2026:11:20:26):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s92(19May2026:11:21:18):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s93(19May2026:11:22:14):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s94(19May2026:11:33:18):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s95(19May2026:11:34:05):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s96(19May2026:11:37:30):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s97(19May2026:11:37:48):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s98(19May2026:11:42:09):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s99(19May2026:11:45:30):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s100(19May2026:11:46:38):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s101(19May2026:12:01:50):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s102(19May2026:12:02:05):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s103(19May2026:12:04:25):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s104(19May2026:12:05:24):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s105(19May2026:12:09:04):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s106(19May2026:14:28:06):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s107(19May2026:14:35:23):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s108(19May2026:14:36:29):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s109(19May2026:14:38:46):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s110(19May2026:17:00:44):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui 
+s111(19May2026:17:13:47):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui "-s " 
+s112(19May2026:17:18:42):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s113(19May2026:17:19:04):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s114(19May2026:17:19:16):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s115(19May2026:17:20:51):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s116(19May2026:17:23:09):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s117(19May2026:17:23:27):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 
+s118(19May2026:17:24:37):  xrun -sv -64 -access +rwc -timescale 1ns/1ns -f mem_ctrl.lst -top tb_mem_ctrl -gui -s 

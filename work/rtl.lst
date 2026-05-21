@@ -1,0 +1,11 @@
+../rtl/booth_radix4.sv
+../rtl/npu.sv
+../rtl/mem_ctrl.sv
+../rtl/npu.sv
+../rtl/neuron_stack.sv
+../rtl/arandu_core.sv
+../data_mem/dram_model.sv
+
+../tb/tb_core.sv
+../tb/tb_mem_ctrl.sv
+../tb/tb_npu.sv

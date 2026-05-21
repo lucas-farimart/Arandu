@@ -1,0 +1,5 @@
+../rtl/booth_radix4.sv
+../rtl/npu.sv
+../rtl/neuron_stack.sv
+../rtl/arandu_core.sv
+../tb/tb_core.sv

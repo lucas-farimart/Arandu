@@ -1,0 +1,329 @@
+# SimVision Command Script (Wed May 27 16:28:43 -03 2026)
+#
+# Version 23.09.s003
+#
+# You can restore this configuration with:
+#
+#     simvision -input core_waves.svcf
+#  or simvision -input core_waves.svcf database1 database2 ...
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-txe_waveform_navigate-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set expand-attributes begin_time
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Search-Console {
+  usual
+  position -anchor e
+}
+preferences set toolbar-txe_waveform_toggle-WaveWindow {
+  usual
+  position -pos 1
+}
+preferences set plugin-enable-groupscope 0
+preferences set toolbar-txe_waveform_view-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set standard-methodology-filtering 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Windows-WaveWindow {
+  usual
+  position -pos 2
+}
+preferences set toolbar-WaveZoom-WaveWindow {
+  usual
+  position -anchor w
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# PPE data
+#
+array set dbNames ""
+set dbNames(realName1) [database require waves  -hints {
+	file ./waves.shm/waves-2.trn
+	file /home/lucas.martins/workspace/arandu/work/waves.shm/waves-2.trn
+}]
+#
+# Groups
+#
+catch {group new -name {STACK A} -overlay 0}
+catch {group new -name {STACK B} -overlay 0}
+catch {group new -name {Group 3} -overlay 0}
+group using {STACK A}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_A.push}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_A.pop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.stackA_empty}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.stackA_full}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_A.stack[0:15]}]} ]
+group using {STACK B}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_B.push}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_B.pop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.stackB_full}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.stackB_empty}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_core.dut.stack_B.stack[0:15]}]} ]
+group using {Group 3}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1920x1043+1919+-1}] != ""} {
+    window geometry "Waveform 1" 1920x1043+1919+-1
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar select designbrowser
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ns \
+    -valuewidth 75
+waveform baseline set -time 0
+
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.clk}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.rst_n}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.input_write}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.mem_ctrl_valid}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.mem_ctrl_data[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.neuron_done}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.buff_select}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.shift_buff}]}
+	} ]]
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.write_Abuff}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.read_Abuff}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.write_Bbuff}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_core.read_Bbuff}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups {{STACK A}}]
+waveform format $groupId0 -namecolor #ff9900
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_core.dut.stack_A.push}]} {-color #ff9900 -namecolor #ff9900}
+    {$dbNames(realName1)::[format {tb_core.dut.stack_A.pop}]} {-color #ff9900 -namecolor #ff9900}
+    {$dbNames(realName1)::[format {tb_core.stackA_empty}]} {-color #ff9900 -namecolor #ff9900}
+    {$dbNames(realName1)::[format {tb_core.stackA_full}]} {-color #ff9900 -namecolor #ff9900}
+    {$dbNames(realName1)::[format {tb_core.dut.stack_A.stack[0:15]}]} {-namecolor #ff9900}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {
+        set id $gpID0
+        waveform hierarchy expand $id
+        set id2 [lindex [waveform hierarchy content $id] 0]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 1]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 2]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 3]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 4]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 5]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 6]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 7]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 8]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 9]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 10]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 11]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 12]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 13]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 14]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        set id2 [lindex [waveform hierarchy content $id] 15]
+        waveform format $id2 -color #ff9900 -namecolor #ff9900
+        waveform hierarchy collapse $id
+    }
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups {{STACK B}}]
+waveform format $groupId0 -namecolor #bb78d3
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_core.dut.stack_B.push}]} {-color #bb78d3 -namecolor #bb78d3}
+    {$dbNames(realName1)::[format {tb_core.dut.stack_B.pop}]} {-color #bb78d3 -namecolor #bb78d3}
+    {$dbNames(realName1)::[format {tb_core.stackB_full}]} {-color #bb78d3 -namecolor #bb78d3}
+    {$dbNames(realName1)::[format {tb_core.stackB_empty}]} {-color #bb78d3 -namecolor #bb78d3}
+    {$dbNames(realName1)::[format {tb_core.dut.stack_B.stack[0:15]}]} {-namecolor #bb78d3}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {
+        set id $gpID0
+        waveform hierarchy expand $id
+        set id2 [lindex [waveform hierarchy content $id] 0]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 1]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 2]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 3]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 4]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 5]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 6]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 7]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 8]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 9]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 10]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 11]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 12]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 13]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 14]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        set id2 [lindex [waveform hierarchy content $id] 15]
+        waveform format $id2 -color #bb78d3 -namecolor #bb78d3
+        waveform hierarchy collapse $id
+    }
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+
+waveform xview limits 590ns 2590ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 960x1016+0+27
+
+#
+# Layout selection
+#
+

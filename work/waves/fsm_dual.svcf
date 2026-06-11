@@ -1,0 +1,329 @@
+# SimVision Command Script (Mon Jun 08 17:44:47 -03 2026)
+#
+# Version 23.09.s003
+#
+# You can restore this configuration with:
+#
+#     simvision -input /home/lucas.martins/workspace/arandu/work/waves/fsm_dual.svcf
+#  or simvision -input /home/lucas.martins/workspace/arandu/work/waves/fsm_dual.svcf database1 database2 ...
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-txe_waveform_navigate-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set expand-attributes begin_time
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Search-Console {
+  usual
+  position -anchor e
+}
+preferences set toolbar-txe_waveform_toggle-WaveWindow {
+  usual
+  position -pos 1
+}
+preferences set plugin-enable-groupscope 0
+preferences set toolbar-txe_waveform_view-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set standard-methodology-filtering 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Windows-WaveWindow {
+  usual
+  position -pos 2
+}
+preferences set toolbar-WaveZoom-WaveWindow {
+  usual
+  position -anchor w
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# PPE data
+#
+array set dbNames ""
+set dbNames(realName1) [database require waves  -hints {
+	file ./waves.shm/waves.trn
+	file /home/lucas.martins/workspace/arandu/work/waves.shm/waves.trn
+}]
+#
+# Groups
+#
+catch {group new -name {Group 1} -overlay 0}
+catch {group new -name TB-STACKA -overlay 0}
+catch {group new -name TB-STACKB -overlay 0}
+group using {Group 1}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group using TB-STACKA
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.empty_a}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.full_a}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.rc_pop_a}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.rc_push_a}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.push_a}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.pop_a}]} ]
+group using TB-STACKB
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.empty_b}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.full_b}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.rc_push_b}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.rc_pop_b}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.push_b}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_fsm_dual.pop_b}]} ]
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1920x1016+-1+26}] != ""} {
+    window geometry "Waveform 1" 1920x1016+-1+26
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar select designbrowser
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ns \
+    -valuewidth 75
+waveform baseline set -time 0
+
+set id [waveform add -signals [subst  {
+	{simulator::[format {tb_fsm_dual.DEPTH}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{simulator::[format {tb_fsm_dual.VECTOR_SIZE}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{simulator::[format {tb_fsm_dual.WORD_W}]}
+	} ]]
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.clk}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.rst_n}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.start}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups TB-STACKA]
+waveform format $groupId0 -namecolor #00ffff
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_fsm_dual.empty_a}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_fsm_dual.full_a}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_fsm_dual.rc_pop_a}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_fsm_dual.rc_push_a}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_fsm_dual.push_a}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_fsm_dual.pop_a}]} {-color #00ffff -namecolor #00ffff}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups TB-STACKB]
+waveform format $groupId0 -namecolor #008ccb
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_fsm_dual.empty_b}]} {-color #008ccb -namecolor #008ccb}
+    {$dbNames(realName1)::[format {tb_fsm_dual.full_b}]} {-color #008ccb -namecolor #008ccb}
+    {$dbNames(realName1)::[format {tb_fsm_dual.rc_push_b}]} {-color #008ccb -namecolor #008ccb}
+    {$dbNames(realName1)::[format {tb_fsm_dual.rc_pop_b}]} {-color #008ccb -namecolor #008ccb}
+    {$dbNames(realName1)::[format {tb_fsm_dual.push_b}]} {-color #008ccb -namecolor #008ccb}
+    {$dbNames(realName1)::[format {tb_fsm_dual.pop_b}]} {-color #008ccb -namecolor #008ccb}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.pop_a_o}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.push_a_o}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.rc_pop_a_o}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.rc_push_a_o}]}
+	} ]]
+waveform format $id -color #00ffff -namecolor #00ffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.pop_b_o}]}
+	} ]]
+waveform format $id -color #008ccb -namecolor #008ccb
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.push_b_o}]}
+	} ]]
+waveform format $id -color #008ccb -namecolor #008ccb
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.rc_pop_b_o}]}
+	} ]]
+waveform format $id -color #008ccb -namecolor #008ccb
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.rc_push_b_o}]}
+	} ]]
+waveform format $id -color #008ccb -namecolor #008ccb
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.all_cols}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.all_rows}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.alter_read}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.alter_stack}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.col_cnt[16:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.CS[3:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.FSM.NS[3:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_a_i[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_a_o[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_b_i[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_b_o[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_head_a[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_head_b[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_tail_a[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_fsm_dual.u_dual.data_tail_b[31:0]}]}
+	} ]]
+
+waveform xview limits 0 1315ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 960x1016+950+19
+
+#
+# Layout selection
+#
+

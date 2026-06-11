@@ -1,96 +1,118 @@
 //=====================================================================
-// Stack de neuronios
+// Stack bidirecional de neuronios
 //---------------------------------------------------------------------
 // Author: Lucas Farias Martins
 // Email:  lucas.martins@ee.ufcg.edu.br
 // Date:   07/05/2026
+// Update: 05/06/2026
 //=====================================================================
 
 module neuron_stack #(
-    parameter DATA_W = 8,
-    parameter DEPTH  = 64,
+    parameter WORD_W = 32,
+    parameter DEPTH  = 16,
     parameter ADDR_W = $clog2(DEPTH+1)
 )(
-    input  logic                      clk,
-    input  logic                      rst_n,
-    //--------------------------------------- Controle 
-    input  logic                      push,
-    input  logic                      pop,
-    //------------------------------------------ Dados 
-    input  logic signed [DATA_W-1:0]  data_in,
-    output logic signed [DATA_W-1:0]  data_out,
-    //----------------------------------------- Status 
-    output logic                      full,
-    output logic                      empty,
-    output logic        [ADDR_W-1:0]  level  // num de elementos validos
+    input  logic              clk,
+    input  logic              rst_n,
+    //------------------------------ Controle 
+    input  logic              push_i,
+    input  logic              pop_i,
+    input  logic              recirc_push_i,
+    input  logic              recirc_pop_i,
+    //--------------------------------- Dados 
+    input  logic [WORD_W-1:0] data_i,
+    output logic [WORD_W-1:0] data_head_o,
+    output logic [WORD_W-1:0] data_tail_o,
+    //-------------------------------- Status 
+    output logic              full_o,
+    output logic              empty_o
 );
 
     //========================================================
     //  Internos
     //========================================================
-    logic signed [DATA_W-1:0] stack_mem [0:DEPTH-1]; // Memoria
-    logic        [ADDR_W-1:0] s_ptr;      // Stack pointer (zero counter)
-    logic          [ADDR_W:0] zero_count; // num de zeros descartados
-    logic                     push_valid;
+    logic [WORD_W-1:0] stack [DEPTH];  // Memoria
+    logic [WORD_W-1:0] data_stack0;    // Buffer de entrada/saida
+    logic [WORD_W-1:0] data_stackN;    // Outra ponta
+    logic [ADDR_W-1:0] s_ptr;          // Stack pointer
+
+    logic push_valid;
+    logic pop_valid;
+    logic ctrl_rst;
+
+    always_comb ctrl_rst = push_i && pop_i;
 
     //========================================================
-    //  Logica combinacional 
-    //========================================================
-    always_comb push_valid = push && (data_in != 0);
-    always_comb empty = (s_ptr == 0);
-    always_comb full  = (s_ptr == DEPTH);
-    always_comb level = s_ptr;
-
-    //========================================================
-    //  Byte de saida e ponteiro
+    //  Ponteiro, Flags e Controle de Head/Tail
     //========================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            s_ptr    <= '0;
-            data_out <= '0;
-        end
+        if (!rst_n || ctrl_rst ) 
+            s_ptr <= '0;
         else begin
-            case ({push_valid, pop})
-                2'b00: begin
-                end
-                2'b10: begin // PUSH
-                    if (!full) begin
-                        stack_mem[s_ptr] <= data_in;
-                        s_ptr            <= s_ptr + 1'b1;
-                    end
-                end
-                2'b01: begin // POP
-                    if (!empty) begin
-                        data_out <= stack_mem[s_ptr-1];
-                        s_ptr    <= s_ptr - 1'b1;
-                    end
-                end
-                2'b11: begin // PUSH + POP
-                    if (!empty) begin
-                        data_out <= stack_mem[s_ptr-1]; // retorna topo atual
-                        stack_mem[s_ptr-1] <= data_in;  // substitui topo
-                    end
-                    else begin // stack vazia
-                        if (!full) begin
-                            stack_mem[s_ptr] <= data_in;
-                            s_ptr            <= s_ptr + 1'b1;
-                        end
-                    end
-                end
+            case ({push_i, pop_i})
+                2'b10:   s_ptr <= (!full_o)  ? s_ptr + 1'b1 : s_ptr;
+                2'b01:   s_ptr <= (!empty_o) ? s_ptr - 1'b1 : s_ptr;
+                default: s_ptr <= s_ptr;
             endcase
         end
     end
 
-    
+    always_comb empty_o    = (s_ptr == 0);
+    always_comb full_o     = (s_ptr == DEPTH);
+    always_comb push_valid = ((push_i || recirc_push_i) && !full_o);
+    always_comb pop_valid  = ((pop_i  || recirc_pop_i)  && !empty_o);
+
+    always_comb data_stack0 = (recirc_push_i) ? stack[DEPTH-1] : data_i;
+    always_comb data_stackN = (recirc_pop_i)  ? stack[0] : 'h0;
+
+    // Por algum motivo nao funciona always comb nessas saidas
+    assign data_head_o = data_stackN;
+    assign data_tail_o = data_stack0;
 
     //========================================================
-    //  Contador de zeros
+    //  Pilha (stack)
     //========================================================
+
+    // PRIMEIRA (head)
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)                      
-            zero_count <= '0;
-        else if (push && (data_in == 0)) 
-            zero_count <= zero_count + 1'b1;
+        if (!rst_n || ctrl_rst ) 
+            stack[0] <= '0;
+        else begin
+            case ({push_valid, pop_valid})
+                2'b10:   stack[0] <= data_stack0;
+                2'b01:   stack[0] <= stack[1];
+                default: stack[0] <= 'h0;
+            endcase
+        end
+    end
+
+    // INTERMEDIARIAS
+    generate;
+        for (genvar i=1; i<DEPTH-1; ++i) begin 
+            always_ff @(posedge clk or negedge rst_n) begin
+                if (!rst_n || ctrl_rst ) 
+                    stack[i] <= 'h0;
+                else begin
+                    case ({push_valid, pop_valid})
+                        2'b10:  stack[i] <= stack[i-1];
+                        2'b01:  stack[i] <= stack[i+1];
+                    endcase
+                    end  
+                end
+        end
+    endgenerate
+
+    // ULTIMA (tail)
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n || ctrl_rst ) 
+            stack[DEPTH-1] <= '0;
+        else begin
+            case ({push_valid, pop_valid})
+                2'b10:   stack[DEPTH-1] <= stack[DEPTH-2];
+                2'b01:   stack[DEPTH-1] <= data_stackN;
+                default: stack[DEPTH-1] <= 'h0;
+            endcase       
+        end
     end
 
 endmodule

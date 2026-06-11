@@ -1,0 +1,8 @@
+../rtl/fsm_controller.sv
+../rtl/metadata_map.sv
+../rtl/mem_controller.sv
+../rtl/arandu_ctrl.sv
+
+../data_mem/dram_model.sv
+
+../tb/tb_ctrl.sv

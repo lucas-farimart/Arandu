@@ -1,7 +1,8 @@
 ../rtl/booth_radix4.sv
 ../rtl/npu.sv
-../rtl/mem_ctrl.sv
-../rtl/npu.sv
+../rtl/mem_controller.sv
+../rtl/npu_32b.sv
+../rtl/requant_unit.sv
 ../rtl/neuron_stack.sv
 ../rtl/arandu_core.sv
 ../data_mem/dram_model.sv

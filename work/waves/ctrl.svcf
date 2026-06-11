@@ -1,0 +1,434 @@
+# SimVision Command Script (Thu Jun 11 11:27:44 -03 2026)
+#
+# Version 23.09.s003
+#
+# You can restore this configuration with:
+#
+#     simvision -input /home/lucas.martins/workspace/arandu/work/waves/ctrl.svcf
+#  or simvision -input /home/lucas.martins/workspace/arandu/work/waves/ctrl.svcf database1 database2 ...
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-txe_waveform_navigate-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set expand-attributes begin_time
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Search-Console {
+  usual
+  position -anchor e
+}
+preferences set toolbar-txe_waveform_toggle-WaveWindow {
+  usual
+  position -pos 1
+}
+preferences set plugin-enable-groupscope 0
+preferences set toolbar-txe_waveform_view-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set standard-methodology-filtering 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Windows-WaveWindow {
+  usual
+  position -pos 2
+}
+preferences set toolbar-WaveZoom-WaveWindow {
+  usual
+  position -anchor w
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# PPE data
+#
+array set dbNames ""
+set dbNames(realName1) [database require waves  -hints {
+	file ./waves.shm/waves.trn
+	file /home/lucas.martins/workspace/arandu/work/waves.shm/waves.trn
+}]
+#
+# Groups
+#
+catch {group new -name {FSM PRINCIPAL} -overlay 0}
+catch {group new -name MEM-CTRL -overlay 0}
+catch {group new -name STACK-A -overlay 0}
+catch {group new -name STACK-B -overlay 0}
+catch {group new -name DRAM -overlay 0}
+catch {group new -name METADATA -overlay 0}
+catch {group new -name CONTROL -overlay 0}
+group using {FSM PRINCIPAL}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_stack}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_read}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_rows}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_cols}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.NS[4:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.CS[4:0]}]} ]
+group using MEM-CTRL
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.CS[3:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.NS[3:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.ping[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.pong[0:3]}]} ]
+group using STACK-A
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_pop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_push}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_rcpop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_rcpush}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_clean}]} ]
+group using STACK-B
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_pop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_push}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_rcpop}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_rcpush}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_clean}]} ]
+group using DRAM
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.dram_valid}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.dram_req}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_memory.busy}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_memory.latency_counter}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.dram_rdata[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.dram_addr[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.base_addr[15:0]}]} ]
+group using METADATA
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.io_enable_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hdn_enable_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.input_width_r[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.output_width_r[9:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_addr_i[5:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_data_i[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_18_o[17:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_16_o[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hidden_width_r[0:15]}]} ]
+group using CONTROL
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.w_model[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_layers[3:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.layer_counter[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_words_load}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_incr_layer}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_first}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_last}]} ]
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1920x1016+-1+26}] != ""} {
+    window geometry "Waveform 1" 1920x1016+-1+26
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar select designbrowser
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ns \
+    -valuewidth 75
+waveform baseline set -time 0
+
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_ctrl.clk}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_ctrl.rst_n}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_ctrl.start}]}
+	} ]]
+waveform format $id -color #ffffff
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups DRAM]
+waveform format $groupId0 -namecolor #ffb400
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.dram_valid}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.dram_req}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.u_memory.busy}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.u_memory.latency_counter}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.dram_rdata[31:0]}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.dram_addr[15:0]}]} {-color #ffb400 -namecolor #ffb400}
+    {$dbNames(realName1)::[format {tb_ctrl.base_addr[15:0]}]} {-color #ffb400 -namecolor #ffb400}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups {{FSM PRINCIPAL}}]
+waveform format $groupId0 -namecolor #e6bede
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_stack}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_read}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_rows}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_cols}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.NS[4:0]}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.CS[4:0]}]} {-color #e6bede -namecolor #e6bede}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups CONTROL]
+
+
+set groupId0 [waveform add -groups MEM-CTRL]
+waveform format $groupId0 -namecolor #00ff00
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.CS[3:0]}]} {-namecolor #00ff00}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.NS[3:0]}]} {-namecolor #00ff00}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.ping[31:0]}]} {-namecolor #00ff00}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.u_mem_ctrl.pong[0:3]}]} {-namecolor #00ff00}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups METADATA]
+waveform format $groupId0 -namecolor #a070ff
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.io_enable_i}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hdn_enable_i}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.input_width_r[15:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.output_width_r[9:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_addr_i[5:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_data_i[31:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_18_o[17:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_16_o[15:0]}]} {-color #a070ff -namecolor #a070ff}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hidden_width_r[0:15]}]} {}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {
+        set id $gpID0
+        waveform hierarchy collapse $id
+    }
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups STACK-A]
+waveform format $groupId0 -namecolor #00ffff
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_pop}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_push}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_rcpop}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_rcpush}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackA_clean}]} {-color #00ffff -namecolor #00ffff}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups STACK-B]
+waveform format $groupId0 -namecolor #00ff99
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_pop}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_push}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_rcpop}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_rcpush}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_ctrl.ctrl_stackB_clean}]} {-color #00ff99 -namecolor #00ff99}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+waveform xview limits 0 10120ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 960x1043+1910+-8
+
+#
+# Layout selection
+#
+

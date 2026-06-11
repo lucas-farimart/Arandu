@@ -10,204 +10,103 @@
 
 module tb_stack;
 
-    //========================================================
-    // Parameters
-    //========================================================
-    localparam int DATA_W = 8;
-    localparam int DEPTH  = 64;
+    localparam WORD_W = 8;
+    localparam DEPTH  = 16;
+    localparam ADDR_W = $clog2(DEPTH+1);
 
     //========================================================
-    // DUT Signals
+    // Sinais
     //========================================================
-    logic                     clk;
-    logic                     rst_n;
-    logic                     push;
-    logic                     pop;
-    logic signed [DATA_W-1:0] data_in;
-    logic signed [DATA_W-1:0] data_out;
-    logic                     full;
-    logic                     empty;
-    logic [7:0]               zero_count;
+    logic clk;
+    logic rst_n;
+    logic push;
+    logic pop;
+    logic recirc_push;
+    logic recirc_pop;
+    logic full;
+    logic empty;
 
-    //========================================================
-    // Queues
-    //========================================================
-    byte signed input_queue   [$];
-    byte signed golden_queue  [$];
+    logic signed [WORD_W-1:0] data_in;
+    logic signed [WORD_W-1:0] data_head;
+    logic signed [WORD_W-1:0] data_tail;
 
     //========================================================
     // DUT
     //========================================================
-
     neuron_stack #(
-        .DATA_W         ( DATA_W          ),
-        .DEPTH          ( DEPTH           )
-    ) dut (
-        .clk            ( clk             ),
-        .rst_n          ( rst_n           ),
-        .push           ( push            ),
-        .pop            ( pop             ),
-        .data_in        ( data_in         ),
-        .data_out       ( data_out        ),
-        .full           ( full            ),
-        .empty          ( empty           ),
-        .level          ( level           ),
-        .zero_count     ( zero_count      )
+        .WORD_W        ( WORD_W       ),
+        .DEPTH         ( DEPTH        )
+    ) stack_u (
+        .clk           ( clk          ),
+        .rst_n         ( rst_n        ),
+        //-----------------------------
+        .push_i        ( push         ),
+        .pop_i         ( pop          ),
+        .recirc_push_i ( recirc_push  ),
+        .recirc_pop_i  ( recirc_pop   ),
+        .data_i        ( data_in      ),
+        .data_head_o   ( data_head    ),
+        .data_tail_o   ( data_tail    ),
+        .full_o        ( full         ),
+        .empty_o       ( empty        )
     );
 
     //========================================================
     // Clock
     //========================================================
-    initial begin clk = 0; forever #5 clk = ~clk; end
+    initial clk = 0;
+    always #10 clk = ~clk;
 
     //========================================================
     // Tasks
     //========================================================
-
-    task reset_dut();
-        rst_n   = 0;
-        push    = 0;
-        pop     = 0;
-        data_in = 0;
-        repeat(5) @(posedge clk);
-        rst_n = 1;
-        repeat(2) @(posedge clk);
-    endtask
-
-    task push_byte(input byte signed val);
+    task do_push(input logic signed [WORD_W-1:0] value);
         @(posedge clk);
         push    <= 1'b1;
-        data_in <= val;
+        pop     <= 1'b0;
+        data_in <= value;
+
         @(posedge clk);
         push    <= 1'b0;
-        data_in <= 0;
+        data_in <= '0;
     endtask
 
-    task pop_byte();
-        @(posedge clk); pop <= 1;
-        @(posedge clk); pop <= 0;
+    task do_pop;
+        @(posedge clk);
+        push <= 1'b0;
+        pop  <= 1'b1;
+
+        @(posedge clk);
+        pop <= 1'b0;
     endtask
 
-    //========================================================
-    // Queue Generation
-    //========================================================
-
-    task build_queue(
-        input int size,
-        input int zero_percent_min,
-        input int zero_percent_max
-    );
-
-        int zero_percent;
-        int rand_sel;
-        byte signed val;
-
-        begin
-
-            input_queue.delete();
-            golden_queue.delete();
-
-            // escolhe % de zeros
-            zero_percent =
-                $urandom_range(
-                    zero_percent_min,
-                    zero_percent_max
-                );
-
-            $display("\n----------------------------------------");
-            $display("QUEUE SIZE     = %0d", size);
-            $display("ZERO PERCENT   = %0d%%", zero_percent);
-            $display("----------------------------------------\n");
-
-            for (int i = 0; i < size; i++) begin
-                rand_sel = $urandom_range(0,99);
-                if (rand_sel < zero_percent) 
-                    val = 0;
-                else
-                    val = $random;
-
-                input_queue.push_back(val);
-                if (val != 0)
-                golden_queue.push_back(val);
-
-            end
-
-            $display("\nINPUT QUEUE:"); foreach(input_queue[i]) $write("%0d ", input_queue[i]);
-            $display("\n");
-            $display("GOLDEN QUEUE:");  foreach(golden_queue[i]) $write("%0d ", golden_queue[i]);
-            $display("\n");
-
+    task do_recirc_push(int num_cycles);
+        repeat(num_cycles) begin
+            @(posedge clk);
+            recirc_push <= 1'b1;
         end
-
+        @(posedge clk);
+        recirc_push <= 1'b0;
     endtask
 
-    //========================================================
-    // Execute Test
-    //========================================================
-    byte signed expected;
-    byte signed received;
-    int         golden_size;
-
-    task execute_test(string test_name);
-
-
-        begin
-
-            $display("\n========================================");
-            $display("RUNNING TEST: %s", test_name);
-            $display("========================================");
-
-            foreach(input_queue[i]) begin
-                push_byte(input_queue[i]);
-                if (zero_count) begin
-                    pass
-                end
-                $display(
-                    "[PUSH] idx=%0d  | data=%0d \t| level=%0d \t| zeros=%0d",
-                    i,
-                    input_queue[i],
-                    level,
-                    zero_count
-                );
-            end
-
-            golden_size = golden_queue.size();
-
-            //--------------------------------------------
-            // pop + comparacao
-            //--------------------------------------------
-
-            $display("\nPOP CHECK:");
-
-            while (!empty) begin
-                pop_byte();
-                #1ns;
-                received = data_out;
-                expected = golden_queue.pop_back();
-                if (received !== expected) 
-                $error("DATA MISMATCH exp=%0d got=%0d",expected,received);
-            end
-
-            //--------------------------------------------
-            // final checks
-            //--------------------------------------------
-
-            if (golden_queue.size() != 0)
-                $error("GOLDEN QUEUE NOT EMPTY");
-
-            $display("\nTEST PASSED: %s", test_name);
-
+    task do_recirc_pop(int num_cycles);
+        repeat(num_cycles) begin
+            @(posedge clk);
+            recirc_pop <= 1'b1;
         end
-
+        @(posedge clk);
+        recirc_pop <= 1'b0;
     endtask
-
-    //========================================================
-    // Main
-    //========================================================
 
     initial begin
+        forever begin
+            if (recirc_pop)  $monitor("[%0t] data_head = %0d", $time, data_head);
+            if (recirc_push) $monitor("[%0t] data_tail = %0d", $time, data_tail);
+            @(posedge clk);
+        end
+    end
 
-        int qsize;
+    initial begin
 
         $display("\n================================================================================ ");
         $display("     _  _                         ___ _           _     _____       _              ");
@@ -216,47 +115,88 @@ module tb_stack;
         $display("    |_|\\_\\___|\\_,_|_| \\___/_||_| |___/\\__\\__,_\\__|_\\_\\   |_|\\___/__/\\__|");
         $display("================================================================================\n ");
 
-        //--------------------------------------------
-        // TEST 1
-        // Random puro
-        //--------------------------------------------
+        rst_n = 1;
 
-        reset_dut();
-        qsize = $urandom_range(1, DEPTH);
-        build_queue(qsize,0,50);
-        execute_test("TEST1_RANDOM");
+        #20ns;
 
-        //--------------------------------------------
-        // TEST 2
-        // 10% a 20% zeros
-        //--------------------------------------------
+        rst_n   = 0;
+        data_in = 0;
 
-        reset_dut();
-        qsize = $urandom_range(DEPTH/2 + 1,DEPTH);
-        build_queue(qsize,10,20);
-        execute_test("TEST2_LOW_SPARSITY");
+        push    = 0;    recirc_push = 0;
+        pop     = 0;    recirc_pop  = 0;
 
-        //--------------------------------------------
-        // TEST 3
-        // 40% a 70% zeros
-        //--------------------------------------------
-
-        reset_dut();
-        qsize = $urandom_range(DEPTH/2 + 1,DEPTH);
-        build_queue(qsize,40,70);
-        execute_test("TEST3_HIGH_SPARSITY");
-
-        //--------------------------------------------
-        // Finish
-        //--------------------------------------------
+        repeat(5) @(posedge clk);
+        rst_n = 1;
 
         $display("\n========================================");
-        $display("ALL TESTS FINISHED");
+        $display(" Push de alguns valores                   ");
+        $display("========================================\n");
+
+        do_push(10);
+        do_push(20);
+        do_push(30);
+        do_push(40);
+        do_push(0);
+        do_push(-15);
+
+        $display("\n========================================");
+        $display(" Pop de alguns valores                    ");
+        $display("========================================\n");
+
+        do_pop();
+        do_pop();
+
+        $display("\n========================================");
+        $display(" Encher/Esvaziar a stack                  ");
+        $display("========================================\n");
+        #500ns;
+
+        rst_n = 0;
+        rst_n = 1;
+
+        repeat(2) begin
+            while (!full)  do_push($urandom_range(-128,127));
+            while (!empty) do_pop();
+        end
+
+        $display("\n========================================");
+        $display(" Encher um pouco e Recircular             ");
+        $display("========================================\n");
+        #500ns;
+
+        do_push(1); do_push(2);   do_push(3);   
+        do_push(4); do_push(5);   do_push(6);   
+        do_push(7); do_push(8);     
+
+        repeat(2) begin
+            do_recirc_pop(8);
+            do_recirc_push(8);
+        end
+
+        //------------------------------------------
+        // Reset do controle (Push + Pop)
+        //------------------------------------------
+        repeat(20) @(posedge clk);
+
+        push <= 1'b1; pop <= 1'b1;
+        @(posedge clk);
+        push <= 1'b0; pop <= 1'b0;
+
+        repeat(20) @(posedge clk);
+        //------------------------------------------
+        // Estado final
+        //------------------------------------------
+        #500ns;
+        $display("\n========================================");
+        $display(" Estado final");
         $display("========================================");
+        $display("full       = %0b", full);
+        $display("empty      = %0b", empty);
+        $display("s_ptr      = %0d", stack_u.s_ptr);
+        $display("========================================\n");
 
         #20;
         $finish;
-
     end
 
 endmodule

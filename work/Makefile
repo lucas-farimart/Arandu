@@ -10,42 +10,54 @@ XRUN_FLAGS = -sv -64 -access +rwc -timescale 1ns/1ns
 WAVE_FLAGS = -input waves.tcl # ainda nao existe 
 
 # Alvo padrao
-all: run
+all: arandu
 
 #========================================================
 #                 COMANDOS DE SIMULACAO
 #========================================================
-run:
+arandu:
+	clear
+	@echo "" 
+	@echo "Arandu DNN accelerator"
+	@echo " -> Ainda em fase de testes dos submodulos:"
+	@echo "" 
+	@echo "|---------------|---------------|" 
+	@echo "| SUBMODULO     | COMANDO MAKE  |"
+	@echo "|---------------|---------------|"
+	@echo "| booth         | booth         |"
+	@echo "| neuron stack  | stack         |"
+	@echo "| dual stack    | dual          |"
+	@echo "| NPU           | npu           |"
+	@echo "| arandu core   | core          |"
+	@echo "|---------------|---------------|"
+	@echo "" 
+
+fsm:
 	clear
 	@mkdir -p $(WAVE_DIR)
-	@echo "Running simulation..."
-	$(XRUN) $(XRUN_FLAGS) $(SRCS) -top $(TOP) $(WAVE_FLAGS)
-
-gui:
-	clear
-	@mkdir -p $(WAVE_DIR)
-	@echo "Running simulation (GUI)..."
-	$(XRUN) $(XRUN_FLAGS) $(SRCS) -top $(TOP) -gui 
-
-#========================================================
-#                 SIMULACOES SECUNDARIAS
-#========================================================
-
-booth:
-	clear
-	@mkdir -p $(WAVE_DIR)
-	@echo "Running Booth simulation (GUI)..."
+	@echo "Running FSM simulation (GUI)..."
 	$(XRUN) $(XRUN_FLAGS) \
-	../rtl/booth_radix4.sv ../tb/tb_booth.sv \
-	-top tb_booth -gui 
+	../rtl/fsm_gpt.sv ../tb/tb_fsm.sv \
+	-top tb_fsm -gui 
 
-stack:
+fsm_dual:
 	clear
 	@mkdir -p $(WAVE_DIR)
-	@echo "Running Neuron stack simulation (GUI)..."
+	@echo "Running FSM + Dual Stack simulation (GUI)..."
 	$(XRUN) $(XRUN_FLAGS) \
-	../rtl/neuron_stack.sv ../tb/tb_stack.sv \
-	-top tb_stack -gui 
+	../rtl/fsm_gpt.sv ../rtl/dual_stack.sv ../tb/tb_fsm_dual.sv \
+	-top tb_fsm_dual -gui 
+
+ctrl:
+	clear
+	@mkdir -p $(WAVE_DIR)
+	@echo "Running Arandu Control simulation (GUI)..."
+	$(XRUN) $(XRUN_FLAGS) -f ./lists/ctrl.lst \
+	-top tb_ctrl -gui 
+
+#--------------------------------------
+#  PROCESSING MODULES
+#--------------------------------------
 
 neuron:
 	clear
@@ -60,7 +72,7 @@ npu:
 	@mkdir -p $(WAVE_DIR)
 	@echo "Running Arandu NPU simulation (GUI)..."
 	$(XRUN) $(XRUN_FLAGS) \
-	-f npu.lst \
+	-f ./lists/npu.lst \
 	-top tb_npu -gui 
 
 core:
@@ -68,16 +80,44 @@ core:
 	@mkdir -p $(WAVE_DIR)
 	@echo "Running Arandu CORE simulation (GUI)..."
 	$(XRUN) $(XRUN_FLAGS) \
-	-f core.lst \
+	-f ./lists/rtl.lst \
 	-top tb_core -gui 
 
 memctrl:
 	clear
 	@mkdir -p $(WAVE_DIR)
-	@echo "Running DRAM memory controller simulation (GUI)..."
+	@echo "Running Memory controller simulation (GUI)..."
 	$(XRUN) $(XRUN_FLAGS) \
-	-f mem_ctrl.lst \
+	-f ./lists/mem_ctrl.lst \
 	-top tb_mem_ctrl -gui 
+
+booth:
+	clear
+	@mkdir -p $(WAVE_DIR)
+	@echo "Running Booth simulation (GUI)..."
+	$(XRUN) $(XRUN_FLAGS) \
+	../rtl/booth_radix4.sv ../tb/tb_booth.sv \
+	-top tb_booth -gui 
+
+#--------------------------------------
+#  DATA MODULES
+#--------------------------------------
+
+stack:
+	clear
+	@mkdir -p $(WAVE_DIR)
+	@echo "Running Neuron stack simulation (GUI)..."
+	$(XRUN) $(XRUN_FLAGS) \
+	../rtl/neuron_stack.sv ../tb/tb_stack.sv \
+	-top tb_stack -gui 
+
+dual:
+	clear
+	@mkdir -p $(WAVE_DIR)
+	@echo "Running Dual stack simulation (GUI)..."
+	$(XRUN) $(XRUN_FLAGS) \
+	../rtl/dual_stack.sv ../rtl/neuron_stack.sv ../tb/tb_dual.sv \
+	-top tb_dual -gui 
 
 #========================================================
 #                COMANDOS UTEIS EXTRAS

@@ -9,124 +9,170 @@
 //=====================================================================
 
 module arandu_core #(
-    parameter int NPU    = 1,
-    parameter int DATA_W = 8,
-    parameter int DEPTH  = 64
+    parameter NPU    = 1,
+    parameter STACKS = 2,
+    parameter DATA_W = 8,
+    parameter WORD_W = 8,
+    parameter DEPTH  = 16
 )(
     input  logic clk,
     input  logic rst_n,
+    input  logic neuron_done,    // All mults are done, full sum
+    input  logic shift_buff,     // Shift activation stream buffer
+    input  logic buff_select,    // Select between stack A and B
+    input  logic input_write,    // Write input on stack B
 
-    // BUS INPUT & STACK CONTROL
-    input  logic                     bus_valid,
-    input  logic   [$clog2(NPU)-1:0] bus_dest,
-    input  logic signed [DATA_W-1:0] x,
-    input  logic signed [DATA_W-1:0] w0,
-    input  logic signed [DATA_W-1:0] w1,
-    input  logic signed [DATA_W-1:0] w2,
-    input  logic signed [DATA_W-1:0] w3,
-    input  logic           [NPU-1:0] pop_stack,
+    input  logic write_Abuff,    // Write commands for stacks A and B (push)
+    input  logic write_Bbuff, 
+    input  logic read_Abuff,     // Read commands for stacks A and B (pop)
+    input  logic read_Bbuff,
+
+    input  logic [31:0] mem_ctrl_data,
+    input  logic        mem_ctrl_valid,
 
     // DEBUG/STATUS
-    output logic           [NPU-1:0] stack_empty,
-    output logic           [NPU-1:0] stack_full,
-    output logic        [DATA_W-1:0] zero_count  [NPU-1:0],
-    output logic               [6:0] stack_level [NPU-1:0],
-
-    // NPU OUTPUTS
-    output logic signed       [31:0] acc0 [NPU-1:0],
-    output logic signed       [31:0] acc1 [NPU-1:0],
-    output logic signed       [31:0] acc2 [NPU-1:0],
-    output logic signed       [31:0] acc3 [NPU-1:0]
+    output logic  stackA_empty,
+    output logic  stackB_empty,
+    output logic  stackA_full,
+    output logic  stackB_full
 );
 
     //=========================================================
     // SIGNALS
     //=========================================================
-    logic           [NPU-1:0] push_stack;
-    logic signed [DATA_W-1:0] stack_data_out   [NPU-1:0]; // STACK OUTPUTS
-    logic                     valid_in_npu     [NPU-1:0]; // NPU VALID
-    logic                     valid_out_unused [NPU-1:0];
+    logic [31:0] actv_shiftbuff;
+    logic [31:0] actv_buffselect;
+    logic [31:0] stackA_data_in;
+    logic [31:0] stackB_data_in;
+    logic [31:0] neuron_pkt;
+
+    logic [31:0] stackA_data_out;  // A-STACK OUTPUTS
+    logic [31:0] stackB_data_out;  // B-STACK OUTPUTS
+    logic        valid_in_npu ;    // NPU VALID
+    logic        valid_out_npu;
+
+    // NPU INPUTS/OUTPUTS
+    logic signed [DATA_W-1:0] core_w0;
+    logic signed [DATA_W-1:0] core_w1;
+    logic signed [DATA_W-1:0] core_w2;
+    logic signed [DATA_W-1:0] core_w3;
+
+    logic signed [31:0] core_acc0;
+    logic signed [31:0] core_acc1;
+    logic signed [31:0] core_acc2;
+    logic signed [31:0] core_acc3;
 
     //=========================================================
-    // VALID ROUTING
+    // WEIGHTS/VALID ROUTING
     //=========================================================
     always_comb begin
-        push_stack = '0;
-        if(bus_valid) push_stack[bus_dest] = 1'b1;
+        core_w3 = mem_ctrl_data[31:24]; 
+        core_w2 = mem_ctrl_data[24:16];
+        core_w1 = mem_ctrl_data[15:8];
+        core_w0 = mem_ctrl_data[7:0];
     end
 
     //=========================================================
-    // NPU INSTANCES
+    // Activation 32b-to-8b Shift Buffer
     //=========================================================
-    generate
-    for(genvar g=0; g<NPU; g++) begin : GEN_NPU
-        npu #(
-            .DATA_W    ( DATA_W              )
-        ) npu_u (
-            .clk       ( clk                 ),
-            .rst_n     ( rst_n               ),
-            .valid_in  ( valid_in_npu[g]     ),
-            .x         ( stack_data_out[g]   ),
-            .w0        ( bus_w0              ),
-            .w1        ( bus_w1              ),
-            .w2        ( bus_w2              ),
-            .w3        ( bus_w3              ),
-            .valid_out ( valid_out_unused[g] ),
-            .acc0      ( acc0[g]             ),
-            .acc1      ( acc1[g]             ),
-            .acc2      ( acc2[g]             ),
-            .acc3      ( acc3[g]             )
-        );
+    always_comb begin
+        case (buff_select)
+            1'b0: actv_buffselect = stackA_data_out;
+            1'b1: actv_buffselect = stackB_data_out;
+        endcase
     end
-    endgenerate
 
-    generate  // VALID NPU: recebe valid quando ha pop
-    for(genvar g=0; g<NPU; g++) begin : GEN_VALID
-        always_comb valid_in_npu[g] = pop_stack[g] && !stack_empty[g];
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            actv_shiftbuff <= 'h0;
+        else if (shift_buff) begin 
+            actv_shiftbuff[31:24] <= actv_shiftbuff[24:16];
+            actv_shiftbuff[24:16] <= actv_shiftbuff[15:8];
+            actv_shiftbuff[15:8]  <= actv_shiftbuff[7:0];
+            // actv_shiftbuff[7:0]   <= 'h0;
+        end else 
+            actv_shiftbuff <= actv_buffselect;
     end
-    endgenerate
 
+    //=========================================================
+    // NPU INSTANCE
+    //=========================================================
+    npu #(
+        .DATA_W    ( DATA_W            )
+    ) npu_u (
+        .clk       ( clk                   ),
+        .rst_n     ( rst_n                 ),
+        .valid_in  ( valid_in_npu          ),
+        .valid_out ( valid_out_npu         ),
+        .x         ( actv_shiftbuff[31:24] ),
+        .w0        ( core_w0               ),
+        .w1        ( core_w1               ),
+        .w2        ( core_w2               ),
+        .w3        ( core_w3               ),
+        .acc0      ( core_acc0             ),
+        .acc1      ( core_acc1             ),
+        .acc2      ( core_acc2             ),
+        .acc3      ( core_acc3             )
+    );
+
+    always_comb valid_in_npu = mem_ctrl_valid;
     //=========================================================
     //  Requantizer for activations
     //=========================================================
-    generate
-    for(genvar g=0; g<NPU; g++) begin : GEN_RQNT
-        requant_unit #(
-            .OUTPUTS  ( NPU*4       ),
-            .SHIFT    ( 7           )
-        ) reqnt_u (
-            .acc0_i   ( acc0[g]     ),
-            .acc1_i   ( acc1[g]     ),
-            .acc2_i   ( acc2[g]     ),
-            .acc3_i   ( acc3[g]     ),
-            .q0_o     ( q0[g]       ),
-            .q1_o     ( q1[g]       ),
-            .q2_o     ( q2[g]       ),
-            .q3_o     ( q3[g]       )
-        );
-    end
-    endgenerate
+    requant_unit #(
+        .OUTPUTS    ( NPU*4        ),
+        .SHIFT      ( 7            )
+    ) reqnt_u (
+        .clk        ( clk          ),
+        .rst_n      ( rst_n        ),
+        .acc0_i     ( core_acc0    ),
+        .acc1_i     ( core_acc1    ),
+        .acc2_i     ( core_acc2    ),
+        .acc3_i     ( core_acc3    ),
+        .neuron_pkt ( neuron_pkt   )
+    );
 
     //=========================================================
-    // STACK INSTANCES
+    // STACK A INSTANCE
     //=========================================================
-    generate
-        for(genvar g=0; g<NPU; g++) begin : GEN_STACK
-            neuron_stack #(
-                .DATA_W        ( DATA_W             ),
-                .DEPTH         ( DEPTH              )
-            ) u_stack (
-                .clk           ( clk                ),
-                .rst_n         ( rst_n              ),
-                .push          ( push_stack[g]      ),
-                .pop           ( pop_stack[g]       ),
-                .data_in       ( bus_x              ),
-                .data_out      ( stack_data_out[g]  ),
-                .full          ( stack_full[g]      ),
-                .empty         ( stack_empty[g]     ),
-                .level         ( stack_level[g]     )
-            );
-        end
-    endgenerate
+    always_comb stackA_data_in = neuron_pkt;
+
+    neuron_stack #(
+        .WORD_W        ( WORD_W           ),
+        .DEPTH         ( DEPTH            )
+    ) stack_A (
+        .clk           ( clk              ),
+        .rst_n         ( rst_n            ),
+        .push          ( write_Abuff      ),
+        .pop           ( read_Abuff       ),
+        .data_in       ( stackA_data_in   ),
+        .data_out      ( stackA_data_out  ),
+        .full          ( stackA_full      ),
+        .empty         ( stackA_empty     )
+    );
+
+    //=========================================================
+    // STACK B INSTANCE
+    //=========================================================
+    always_comb begin 
+        case (input_write)
+            1'b1: stackB_data_in = mem_ctrl_data;
+            1'b0: stackB_data_in = neuron_pkt; 
+        endcase
+    end
+
+    neuron_stack #(
+        .WORD_W        ( WORD_W           ),
+        .DEPTH         ( DEPTH            )
+    ) stack_B (
+        .clk           ( clk              ),
+        .rst_n         ( rst_n            ),
+        .push          ( write_Bbuff      ),
+        .pop           ( read_Bbuff       ),
+        .data_in       ( stackB_data_in   ),
+        .data_out      ( stackB_data_out  ),
+        .full          ( stackB_full      ),
+        .empty         ( stackB_empty     )
+    );
 
 endmodule

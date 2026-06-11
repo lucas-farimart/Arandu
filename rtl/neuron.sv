@@ -9,10 +9,11 @@
 module neuron #(
     parameter DATA_W = 8
 )(
-    input  logic                      clk,
-    input  logic                      rst_n,
-    input  logic                      valid_in,
-    output logic                      valid_out,
+    input  logic clk,
+    input  logic rst_n,
+    input  logic neuron_done,
+    input  logic valid_in,
+    output logic valid_out,
     input  logic signed  [DATA_W-1:0] x,
     input  logic signed  [DATA_W-1:0] w,
     output logic signed        [31:0] acc,

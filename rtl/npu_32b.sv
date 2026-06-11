@@ -12,11 +12,9 @@ module npu_32b #(
     input  logic clk,
     input  logic rst_n,
 
-    input  logic valid_i
-    output logic valid_o_0,
-    output logic valid_o_1,
-    output logic valid_o_2,
-    output logic valid_o_3,
+    input  logic valid_i,
+    output logic valid_o,
+    input  logic neuron_done,
 
     input  logic signed [DATA_W-1:0] x,
     input  logic signed [DATA_W-1:0] w0,
@@ -38,6 +36,7 @@ module npu_32b #(
     (
         .clk         ( clk          ),
         .rst_n       ( rst_n        ),
+        .neuron_done ( neuron_done  ),
         .valid_in    ( valid_i      ),
         .valid_out   ( valid_o_0    ),
         .x           ( x            ),
@@ -49,6 +48,7 @@ module npu_32b #(
     ( 
         .clk         ( clk          ),
         .rst_n       ( rst_n        ),
+        .neuron_done ( neuron_done  ),
         .valid_in    ( valid_i      ),
         .valid_out   ( valid_o_1    ),
         .x           ( x            ),
@@ -60,6 +60,7 @@ module npu_32b #(
     (
         .clk         ( clk          ),
         .rst_n       ( rst_n        ),
+        .neuron_done ( neuron_done  ),
         .valid_in    ( valid_i      ),
         .valid_out   ( valid_o_2    ),
         .x           ( x            ),
@@ -71,11 +72,18 @@ module npu_32b #(
     (
         .clk         ( clk          ),
         .rst_n       ( rst_n        ),
+        .neuron_done ( neuron_done  ),
         .valid_in    ( valid_i      ),
         .valid_out   ( valid_o_3    ),
         .x           ( x            ),
         .w           ( w3           ),
         .acc         ( acc3         )
     );
+
+    //---------------------------------------------------------
+    //  OUT VALID
+    //---------------------------------------------------------
+    always_comb 
+    valid_o = valid_o_0 && valid_o_1 && valid_o_2 && valid_o_3;
 
 endmodule

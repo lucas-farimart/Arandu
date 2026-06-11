@@ -9,8 +9,8 @@
 module dram_model #(
     parameter ADDR_WIDTH = 16,
     parameter DATA_WIDTH = 32,
-    parameter MEM_WORDS  = 4096,
-    parameter LATENCY    = 12
+    parameter MEM_WORDS  = 1024,
+    parameter LATENCY    = 4
 )(
     input  logic                  clk,
     input  logic                  rstn,
@@ -28,6 +28,10 @@ module dram_model #(
     logic                  cooldown;
     logic [ADDR_WIDTH-1:0] latched_addr;
     integer                latency_counter;
+
+    initial begin
+        $readmemh("../data_mem/network.hex", mem);
+    end
 
     //=========================================================
     // Modelo DRAM

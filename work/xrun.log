@@ -1,53 +1,48 @@
 xrun(64): 23.09-s003: (c) Copyright 1995-2023 Cadence Design Systems, Inc.
-TOOL:	xrun(64)	23.09-s003: Started on May 19, 2026 at 17:24:37 -03
+TOOL:	xrun(64)	23.09-s003: Started on Jun 11, 2026 at 11:27:06 -03
 xrun
 	-sv
 	-64
 	-access +rwc
 	-timescale 1ns/1ns
-	-f mem_ctrl.lst
-		../rtl/mem_ctrl.sv
+	-f ./lists/ctrl.lst
+		../rtl/fsm_controller.sv
+		../rtl/metadata_map.sv
+		../rtl/mem_controller.sv
+		../rtl/arandu_ctrl.sv
 		../data_mem/dram_model.sv
-		../tb/tb_mem_ctrl.sv
-	-top tb_mem_ctrl
+		../tb/tb_ctrl.sv
+	-top tb_ctrl
 	-gui
 	-s
-Recompiling... reason: file '../data_mem/dram_model.sv' is newer than expected.
-	expected: Tue May 19 17:23:22 2026
-	actual:   Tue May 19 17:24:28 2026
-file: ../data_mem/dram_model.sv
-	module worklib.dram_model:sv
-		errors: 0, warnings: 0
-file: ../tb/tb_mem_ctrl.sv
-	module worklib.tb_mem_ctrl:sv
+Recompiling... reason: file '../rtl/arandu_ctrl.sv' is newer than expected.
+	expected: Thu Jun 11 11:25:31 2026
+	actual:   Thu Jun 11 11:27:01 2026
+file: ../rtl/arandu_ctrl.sv
+	module worklib.arandu_ctrl:sv
 		errors: 0, warnings: 0
 	Elaborating the design hierarchy:
 		Caching library 'worklib' ....... Done
 	Top level design units:
-		tb_mem_ctrl
-        .base_addr     ( 0              ),
-                         |
-xmelab: *W,CUVMPW (../tb/tb_mem_ctrl.sv,41|25): port sizes differ in port connection(32/16) for the instance(tb_mem_ctrl) .
+		tb_ctrl
 	Building instance overlay tables: .................... Done
 	Generating native compiled code:
-		worklib.tb_mem_ctrl:sv <0x66d1d878>
-			streams:  18, words: 11161
-		worklib.dram_model:sv <0x7167da40>
-			streams:   9, words:  3283
+		worklib.arandu_ctrl:sv <0x567d3267>
+			streams:  55, words: 17477
 	Building instance specific data structures.
 	Loading native compiled code:     .................... Done
 	Design hierarchy summary:
 		                 Instances  Unique
-		Modules:                 3       3
-		Registers:              33      33
-		Scalar wires:           14       -
-		Vectored wires:          9       -
-		Always blocks:          13      13
-		Initial blocks:          2       2
-		Pseudo assignments:     15       -
-		Process Clocks:          5       1
+		Modules:                 6       6
+		Registers:             113     113
+		Scalar wires:           76       -
+		Vectored wires:         24       -
+		Always blocks:          49      49
+		Initial blocks:          3       3
+		Pseudo assignments:     62       -
+		Process Clocks:         14       1
 		Simulation timescale:  1ns
-	Writing initial simulation snapshot: worklib.tb_mem_ctrl:sv
+	Writing initial simulation snapshot: worklib.tb_ctrl:sv
 xmsim: *W,NOMTDGUI: Multi-Threaded Dumping is disabled for interactive debug mode.
 SVSEED default: 1
 xcelium> 
@@ -59,18 +54,6 @@ Relinquished control to SimVision...
 xcelium> input -quiet .reinvoke.sim
 xcelium> file delete .reinvoke.sim
 xcelium> run
-
-
-  ___  ___    _   __  __    ___         _           _        
- |   \| _ \  /_\ |  \/  |  / __|___ _ _| |_ _ _ ___| |   
- | |) |   / / _ \| |\/| | | (__/ _ \ ' \  _| '_/ _ \ |  
- |___/|_|_\/_/ \_\_|  |_|  \___\___/_||_\__|_| \___/_|
-
-
-Simulation complete via $finish(1) at time 2075 NS + 0
-../tb/tb_mem_ctrl.sv:101         $finish;
-xcelium> ^C
-xcelium> exit
-...Regained control from SimVision
--------------------------------------
-TOOL:	xrun(64)	23.09-s003: Exiting on May 19, 2026 at 17:35:22 -03  (total: 00:10:45)
+Simulation complete via $finish(1) at time 10120 NS + 0
+../tb/tb_ctrl.sv:136         $finish;
+xcelium> 

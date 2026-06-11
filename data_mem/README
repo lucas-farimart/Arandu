@@ -1,0 +1,29 @@
+//-------------------------------------------------------------------
+// Formato: @endereço palavra32b (endereços em hexadecimal)
+// Ou apenas as palavras sequencialmente
+//-------------------------------------------------------------------
+
+@0000 40080008    // layers=4, output_width=2, input_width=8
+                  // 0x4 << 28 | 0x002 << 18 | 0x00008 = 0x40080008
+
+@0001 00060012    // hidden_1=6 (0x0006), hidden_2=0x0004
+                  // 0x0006 << 16 | 0x0004 << 18 | 0x00008 = 0x00060004
+
+
+//-------------------------------------------------------------------
+// Formato Intel HEX padrão (mais comum)
+//-------------------------------------------------------------------
+
+:020000040000FA - extensão de endereço (segmento 0x0000)
+
+:100000000300400800060012003400560078009AE6 - dados:
+    10 = 16 bytes de dados
+    0000 = endereço inicial 0x0000
+    00 = tipo record (dado)
+    03004008 = palavra32 do endereço 0x0000
+    00060012 = palavra32 do endereço 0x0001
+    00340056 = palavra32 do endereço 0x0002
+    0078009A = palavra32 do endereço 0x0003
+    E6 = checksum
+
+:00000001FF - EOF record

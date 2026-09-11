@@ -1,5 +1,5 @@
 # Arandu
-## A Naive DNN 32b Accelerator using Double Circular Linked Buffers and Latency Hiding
+## A Naive DNN Accelerator using Double Circular Linked Buffers and Latency Hiding
 
 This project is not an attempt to inovate the well-established DNN hardware architecture fiel. It is just a personal project I made concurrently with my studies, including loop nesting, data reuse, etc. and trying to use minimal digital resources like flip-flops and combinational logic.
 

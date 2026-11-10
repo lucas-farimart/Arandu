@@ -4,9 +4,10 @@
 // Author: Lucas Farias Martins
 // Email:  lucas.martins@ee.ufcg.edu.br
 // Date:   08/05/2026
+// Update: 05/11/2026
 //=====================================================================
 
-module neuron #(
+module neuron_int8 #(
     parameter DATA_W = 8
 )(
     input  logic clk,
@@ -16,7 +17,7 @@ module neuron #(
     output logic valid_out,
     input  logic signed  [DATA_W-1:0] x,
     input  logic signed  [DATA_W-1:0] w,
-    output logic signed        [31:0] acc,
+    output logic signed        [31:0] acc
 );
 
     //---------------------------------------------------------

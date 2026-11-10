@@ -1,0 +1,394 @@
+# SimVision Command Script (Thu Jun 18 17:55:25 -03 2026)
+#
+# Version 23.09.s003
+#
+# You can restore this configuration with:
+#
+#     simvision -input /home/lucas.martins/workspace/arandu/work/waves/arandu.svcf
+#  or simvision -input /home/lucas.martins/workspace/arandu/work/waves/arandu.svcf database1 database2 ...
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-txe_waveform_navigate-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set expand-attributes begin_time
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Search-Console {
+  usual
+  position -anchor e
+}
+preferences set toolbar-txe_waveform_toggle-WaveWindow {
+  usual
+  position -pos 1
+}
+preferences set plugin-enable-groupscope 0
+preferences set toolbar-txe_waveform_view-WaveWindow {
+  usual
+  shown 1
+  position -row 3
+}
+preferences set standard-methodology-filtering 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Windows-WaveWindow {
+  usual
+  position -pos 2
+}
+preferences set toolbar-WaveZoom-WaveWindow {
+  usual
+  position -anchor w
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# PPE data
+#
+array set dbNames ""
+set dbNames(realName1) [database require waves  -hints {
+	file ./waves.shm/waves.trn
+	file /home/lucas.martins/workspace/arandu/work/waves.shm/waves.trn
+}]
+#
+# Groups
+#
+catch {group new -name {STACK A} -overlay 0}
+catch {group new -name {STACK B} -overlay 0}
+catch {group new -name {CORE INTERNALS} -overlay 0}
+catch {group new -name {CONTROL INTERNALS} -overlay 0}
+group using {STACK A}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_clean_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_empty_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_full_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_pop_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_push_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_rcpop_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_rcpush_o}]} ]
+group using {STACK B}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_clean_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_empty_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_full_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_pop_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_push_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_rcpop_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_rcpush_o}]} ]
+group using {CORE INTERNALS}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.input_write_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.memctrl_data_i[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.neuron_enb_i}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.neuron_vld_o}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_w[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackB_dout[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackB_din[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackA_dout[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackA_din[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_shiftbuff[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_q[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_actv_mux[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_acc[31:0]}]} ]
+group using {CONTROL INTERNALS}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_word[31:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_valid}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_byte[7:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_last}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_incr_layer}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_incr_addr}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_first}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_enb}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.layer_counter[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.FSM_u.NS[4:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_arandu.top.control_u.FSM_u.CS[4:0]}]} ]
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1920x1016+-1+26}] != ""} {
+    window geometry "Waveform 1" 1920x1016+-1+26
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar select designbrowser
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 228 \
+    -units ns \
+    -valuewidth 75
+waveform baseline set -time 0
+
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.clk}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.rst_n}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.start}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.done}]}
+	} ]]
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.base_addr[15:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.dram_addr[15:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.dram_rdata[31:0]}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.dram_req}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.dram_valid}]}
+	} ]]
+waveform format $id -color #ff9900 -namecolor #ff9900
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups {{CORE INTERNALS}}]
+waveform format $groupId0 -namecolor #b0a6f0
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.input_write_i}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.memctrl_data_i[31:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.neuron_enb_i}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.neuron_vld_o}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_w[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackB_dout[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackB_din[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackA_dout[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_stackA_din[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_shiftbuff[31:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_q[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_actv_mux[7:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+    {$dbNames(realName1)::[format {tb_arandu.top.core_u.core_acc[31:0]}]} {-color #b0a6f0 -namecolor #b0a6f0}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups {{CONTROL INTERNALS}}]
+waveform format $groupId0 -namecolor #f3ccd6
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_word[31:0]}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_valid}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_out_byte[7:0]}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_last}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_incr_layer}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_incr_addr}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_first}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.ctrl_enb}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.layer_counter[15:0]}]} {-color #f3ccd6 -namecolor #f3ccd6}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.FSM_u.NS[4:0]}]} {}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.FSM_u.CS[4:0]}]} {}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+set id [waveform add -cdivider divider]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.top.control_u.memctrl_u.out_byte[7:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.top.control_u.memctrl_u.out_word[31:0]}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.top.control_u.memctrl_u.ping_read}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{$dbNames(realName1)::[format {tb_arandu.top.control_u.memctrl_u.pong[0:3]}]}
+	} ]]
+set id [waveform add -cdivider divider]
+
+set groupId0 [waveform add -groups {{STACK A}}]
+waveform format $groupId0 -namecolor #00ff99
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_clean_o}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_empty_i}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_full_i}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_pop_o}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_push_o}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_rcpop_o}]} {-color #00ff99 -namecolor #00ff99}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackA_rcpush_o}]} {-color #00ff99 -namecolor #00ff99}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+
+set groupId0 [waveform add -groups {{STACK B}}]
+waveform format $groupId0 -namecolor #00ffff
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_clean_o}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_empty_i}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_full_i}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_pop_o}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_push_o}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_rcpop_o}]} {-color #00ffff -namecolor #00ffff}
+    {$dbNames(realName1)::[format {tb_arandu.top.control_u.stackB_rcpush_o}]} {-color #00ffff -namecolor #00ffff}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+
+
+waveform xview limits 0 1132ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 960x1043+1910+-8
+
+#
+# Layout selection
+#
+

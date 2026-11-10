@@ -16,6 +16,7 @@ module metadata_map #(
     input  logic clk,
     input  logic rst_n,
 
+    input  logic        done_i,
     input  logic        io_enable_i,
     input  logic        hdn_enable_i,
     input  logic [3:0]  layers_i,
@@ -41,7 +42,7 @@ module metadata_map #(
 
     // input / output
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+        if (!rst_n || done_i) begin
             input_width_r  <= 'h0;
             output_width_r <= 'h0;
         end
@@ -53,7 +54,7 @@ module metadata_map #(
 
     // hiddens
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) 
+        if (!rst_n || done_i) 
             hidden_width_r <= '{default: 0};
         else if (hdn_enable_i) begin
             hidden_width_r[width_addr_i  ] <= width_data_i[31:16];

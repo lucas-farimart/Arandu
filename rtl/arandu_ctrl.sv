@@ -1,9 +1,11 @@
 //=====================================================================
-// Arandu Control: State logic and Flags generation
+// Arandu Control 
+//   State logic and Control flags handling
 //---------------------------------------------------------------------
 // Author: Lucas Farias Martins
 // Email:  lucas.martins@ee.ufcg.edu.br
 // Date:   11/05/2026
+// Date:   10/06/2026
 //=====================================================================
 
 module arandu_ctrl #(
@@ -15,6 +17,9 @@ module arandu_ctrl #(
     input  logic  clk,
     input  logic  rst_n,
     input  logic  start,
+    output logic  done,
+    output logic  input_write_o,
+    output logic  neuron_enb_o,
 
     // MEM CONTROL INTERFACE
     input  logic [15:0] base_addr_i,
@@ -22,6 +27,7 @@ module arandu_ctrl #(
     input  logic [31:0] dram_rdata_i,
     input  logic        dram_valid_i,
     output logic        dram_req_o,
+    
 
     // FSM CONTROL SIGNALS
     input  logic        stackA_empty_i,
@@ -38,7 +44,10 @@ module arandu_ctrl #(
     output logic        stackB_pop_o,
     output logic        stackB_rcpush_o,
     output logic        stackB_rcpop_o,
-    output logic        stackB_clean_o  
+    output logic        stackB_clean_o,
+
+    output logic [31:0] memctrl_data_o,
+    output logic [7:0]  memctrl_byte_o
     
 );
     //======================================================
@@ -54,6 +63,7 @@ module arandu_ctrl #(
     logic [17:0]  cfg_lnest0; // inner loop nest
     logic [15:0]  cfg_lnest1; // outer loop nest
 
+    logic         ctrl_rst;
     logic         ctrl_enb;
     logic         ctrl_io_enable;
     logic         ctrl_hdn_enable;
@@ -82,8 +92,10 @@ module arandu_ctrl #(
     logic [15:0] global_timer;
 
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)          layer_counter <= 'h1; else 
-        if (ctrl_incr_layer) layer_counter <= layer_counter + 1;
+        if (!rst_n || done)  
+            layer_counter <= 'h0; 
+        else if (ctrl_incr_layer) 
+            layer_counter <= layer_counter + 1;
     end
 
     always_ff @(posedge clk or negedge rst_n) begin
@@ -95,7 +107,7 @@ module arandu_ctrl #(
     // INFERENCIA DAS DIMENSOES DO MODELO
     //======================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)         cfg_layers <= '0; else
+        if (!rst_n || done) cfg_layers <= '0; else
         if (ctrl_io_enable) cfg_layers <= dram_rdata_i[31:28];
     end
 
@@ -104,33 +116,33 @@ module arandu_ctrl #(
     always_comb w_output = (cfg_width_16 >> 2) + 3;   // 4 de 8b
 
     always_comb ctrl_last  = (layer_counter == cfg_layers-2);    
-    always_comb ctrl_first = (layer_counter == 0); 
+    always_comb ctrl_first = (layer_counter == 'h0); 
 
     always_comb cfg_lnest0       = cfg_width_18;
     always_comb cfg_lnest1       = cfg_width_16;
-    always_comb cfg_words_load   = (dram_addr_o == w_model-1) && dram_valid_i;
+    always_comb cfg_words_load   = (dram_addr_o == w_model) && dram_valid_i;
     always_comb cfg_width_data   = (ctrl_hdn_enable) ? dram_rdata_i : '0;
     always_comb cfg_output_width = (ctrl_io_enable)  ? dram_rdata_i[27:18] : '0;
     always_comb cfg_input_width  = (ctrl_io_enable)  ? dram_rdata_i[17:0]  : '0;
-    // always_comb cfg_layers       = (ctrl_io_enable)  ? dram_rdata_i[31:28] : '0;
 
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n || cfg_words_load) 
+        if (!rst_n || cfg_words_load || done) 
             cfg_width_addr <= 'h0;
-        else if (ctrl_hdn_enable)
+        else if (ctrl_hdn_enable)     
             cfg_width_addr <= cfg_width_addr + 2;
-        else if (ctrl_incr_layer)
+        else if (ctrl_incr_layer)     
             cfg_width_addr <= cfg_width_addr + 1;
     end
 
     //======================================================
     //  CONTROLADOR DE MEMORIA
     //======================================================
-    mem_controller u_mem_ctrl 
+    mem_controller memctrl_u 
     (
         .clk          ( clk               ),
         .rst_n        ( rst_n             ),
         .start_i      ( start             ),
+        .done_i       ( done              ),
         .enb_i        ( ctrl_enb          ),
         .base_addr_i  ( base_addr_i       ),
         .dram_addr_o  ( dram_addr_o       ),
@@ -141,6 +153,9 @@ module arandu_ctrl #(
         .out_word     ( ctrl_out_word     ),
         .out_valid    ( ctrl_out_valid    )
     );
+
+    always_comb memctrl_data_o = dram_rdata_i;
+    always_comb memctrl_byte_o = ctrl_out_byte;
 
     //======================================================
     //  MAPEAMENTO DOS METADADOS DA REDE
@@ -153,7 +168,7 @@ module arandu_ctrl #(
     ) metadata_u (
         .clk            ( clk               ),
         .rst_n          ( rst_n             ),
-        
+        .done_i         ( done              ),
         .io_enable_i    ( ctrl_io_enable    ),
         .hdn_enable_i   ( ctrl_hdn_enable   ),
         .layers_i       ( cfg_layers        ),
@@ -161,7 +176,6 @@ module arandu_ctrl #(
         .output_width_i ( cfg_output_width  ),
         .width_addr_i   ( cfg_width_addr    ),
         .width_data_i   ( cfg_width_data    ),
-
         .width_18_o     ( cfg_width_18      ),
         .width_16_o     ( cfg_width_16      )
     );
@@ -169,35 +183,39 @@ module arandu_ctrl #(
     //======================================================
     // FSM: UMA MAQUINA MINHA
     //======================================================
-    fsm_controller FSM (
-        .clk          ( clk              ),
-        .rst_n        ( rst_n            ),
+    fsm_controller FSM_u (
+        .clk           ( clk              ),
+        .rst_n         ( rst_n            ),
 
-        .start_i      ( start            ),
-        .first_i      ( ctrl_first       ),
-        .last_i       ( ctrl_last        ),
-        .pop_result_i ( 1'b0             ),
-        .mem_valid_i  ( dram_valid_i     ),
-        .w_model_i    ( cfg_words_load   ),
-        .lnest0_i     ( cfg_lnest0       ),
-        .lnest1_i     ( cfg_lnest1       ),
+        .start_i       ( start            ),
+        .first_i       ( ctrl_first       ),
+        .last_i        ( ctrl_last        ),
+        .pop_result_i  ( 1'b0             ),
+        .mem_valid_i   ( dram_valid_i     ),
+        .w_model_i     ( cfg_words_load   ),
+        .lnest0_i      ( cfg_lnest0       ),
+        .lnest1_i      ( cfg_lnest1       ),
 
-        .io_enable_o  ( ctrl_io_enable   ),
-        .hdn_enable_o ( ctrl_hdn_enable  ),
-        .incr_layer_o ( ctrl_incr_layer  ),
-        .incr_addr_o  ( ctrl_incr_addr   ),
-        .mem_enb_o    ( ctrl_enb         ),
+        .io_enable_o   ( ctrl_io_enable   ),
+        .hdn_enable_o  ( ctrl_hdn_enable  ),
+        .incr_layer_o  ( ctrl_incr_layer  ),
+        .incr_addr_o   ( ctrl_incr_addr   ),
+        .mem_enb_o     ( ctrl_enb         ),
+        .input_write_o ( input_write_o    ),
+        .neuron_enb_o  ( neuron_enb_o     ),
 
-        .push_a_o     ( stackA_pop_o     ),
-        .push_b_o     ( stackB_pop_o     ),
-        .pop_a_o      ( stackA_push_o    ),
-        .pop_b_o      ( stackB_push_o    ),
-        .clean_a_o    ( stackA_clean_o   ),
-        .clean_b_o    ( stackB_clean_o   ),
-        .rc_pop_b_o   ( stackB_rcpush_o  ),
-        .rc_pop_a_o   ( stackA_rcpush_o  ),
-        .rc_push_a_o  ( stackA_rcpop_o   ),
-        .rc_push_b_o  ( stackB_rcpop_o   )
+        .push_a_o      ( stackA_pop_o     ),
+        .push_b_o      ( stackB_pop_o     ),
+        .pop_a_o       ( stackA_push_o    ),
+        .pop_b_o       ( stackB_push_o    ),
+        .clean_a_o     ( stackA_clean_o   ),
+        .clean_b_o     ( stackB_clean_o   ),
+        .rc_pop_b_o    ( stackB_rcpush_o  ),
+        .rc_pop_a_o    ( stackA_rcpush_o  ),
+        .rc_push_a_o   ( stackA_rcpop_o   ),
+        .rc_push_b_o   ( stackB_rcpop_o   ),
+
+        .done_o        ( done     )
     );
 
 endmodule

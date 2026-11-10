@@ -116,9 +116,17 @@ module tb_ctrl;
     //==================================================
     initial begin
 
-        rst_n = 0;
-        start = 0;
-        base_addr = '0;
+        $display("");
+        $display("====================================================================");
+        $display("      _                    _         ___         _           _           ");
+        $display("     /_\\  _ _ __ _ _ _  __| |_  _   / __|___ _ _| |_ _ _ ___| |         ");
+        $display("    / _ \\| '_/ _` | ' \\/ _` | || | | (__/ _ \\ ' \\  _| '_/ _ \\ |     ");
+        $display("   /_/ \\_\\_| \\__,_|_||_\\__,_|\\_,_|  \\___\\___/_||_\\__|_| \\___/_| ");
+        $display("====================================================================");
+        $display("\n");
+
+        rst_n = 0; start = 0;
+        base_addr = '0; $display("base_addr = %h\n",base_addr);
 
         core_stackA_empty = 0;
         core_stackB_empty = 0;
@@ -128,12 +136,14 @@ module tb_ctrl;
         repeat(5) @(posedge clk);
         rst_n = 1;
 
-        @(negedge clk); start = 1; 
-        @(negedge clk); start = 0;
+        repeat (3) begin
+            @(negedge clk); start = 1;
+            @(negedge clk); start = 0;
+            #4us;
+        end
 
-        // #10us
-        #10us
-        $finish;
+        #1us $finish;
+
     end
 
 

@@ -1,300 +1,220 @@
 //=====================================================================
 // Testbench: Arandu's processing core 
 // Description:
-//   Verifies the NPU cluster + stack buffers.
+//   Verifies the NPU processing
+//---------------------------------------------------------------------
+//  y = W * x     W: NEURONS x 3     x: 3
+//
+//  W = [  1.0   2.0   3.0 ]      x = [ 1.0 ]      y = [ 14.0 ]
+//      [  0.5  -1.0   2.0 ]          [ 2.0 ]          [  4.5 ]
+//      [  2.0   2.0   2.0 ]          [ 3.0 ]          [ 12.0 ]
+//      [ -1.0   0.0   4.0 ]                           [ 11.0 ]
+//
 //---------------------------------------------------------------------
 // Author: Lucas Farias Martins
 // Email:  lucas.martins@ee.ufcg.edu.br
 // Date:   11/05/2026
 //=====================================================================
 
-`timescale 1ns/1ns
+//=====================================================================
+//  ATENCAO - premissas (ajuste se for diferente no seu design):
+//   1) A preload das SRAMs e feita por referencia hierarquica na task
+//      preload_memories(). Nao tenho mem_weights/mem_actvs, entao os
+//      nomes (mem) e o layout (1 palavra por entrada j, com os pesos
+//      dos NEURONS lado a lado) sao suposicoes.
+//   2) Cada resultado de neuronio e capturado quando npu_o_valid = 1.
+//   3) size_i precisa ter pelo menos 2 bits para representar 3
+//      (veja observacoes na resposta).
+//=====================================================================
+
+`timescale 1ns/10ps
 
 module tb_core;
 
-    localparam CLK_PERIOD = 20;
-    localparam DEPTH      = 16;
+    //-----------------------------------------------------------------
+    // Parametros
+    //-----------------------------------------------------------------
+    parameter int  SIZE        = 3;
+    parameter int  NEURONS     = 4;    
+    parameter int  MUL_LAT     = 9;
+    parameter int  ADDR_W      = 9;
+    parameter int  DATA_W      = 32;
+    parameter int  WORD_W      = 4*DATA_W; // 256
+    parameter int  DEPTH       = 512;
+    parameter int  MAX_SIZE    = 4;
+    parameter time CLK_PER     = 2ns;
+    parameter time MEM_LATENCY = 8ns;
+    parameter time V_TIME      = 2ns;
+    parameter time TIMEOUT     = 2000ns;
 
-    //=========================================================
-    // DUT SIGNALS
-    //=========================================================
-    logic clk;
-    logic rst_n;
+    //-----------------------------------------------------------------
+    // Sinais do DUT
+    //-----------------------------------------------------------------
+    logic       clk;
+    logic       rst_n;
+    logic       enb_i;
+    logic       we_i;
+    logic [3:0] size_i;                       // precisa de >= 2 bits p/ valor 3
+    logic       actv_selx_i;
+    logic       actv_sely_i;
 
-    logic neuron_done;
-    logic shift_buff;
-    logic buff_select;
-    logic input_write;
-
-    logic write_Abuff;
-    logic write_Bbuff;
-    logic read_Abuff;
-    logic read_Bbuff;
-
-    logic [31:0] mem_ctrl_data;
-    logic        mem_ctrl_valid;
-
-    logic stackA_empty;
-    logic stackB_empty;
-    logic stackA_full;
-    logic stackB_full;
-
-    //=========================================================
-    // CLOCK
-    //=========================================================
-    initial begin
-        clk = 0;
-        forever #(CLK_PERIOD/2) clk = ~clk;
-    end
-
-    //=========================================================
+    //-----------------------------------------------------------------
     // DUT
-    //=========================================================
+    //-----------------------------------------------------------------
     arandu_core #(
-        .NPU            ( 1     ),
-        .STACKS         ( 2     ),
-        .DATA_W         ( 8     ),
-        .WORD_W         ( 32    ),
-        .DEPTH          ( DEPTH )
-    ) dut (
-        .clk            ( clk             ),
-        .rst_n          ( rst_n           ),
-        .neuron_done    ( neuron_done     ),
-        .shift_buff     ( shift_buff      ),
-        .buff_select    ( buff_select     ),
-        .input_write    ( input_write     ),
-        .write_Abuff    ( write_Abuff     ),
-        .write_Bbuff    ( write_Bbuff     ),
-        .read_Abuff     ( read_Abuff      ),
-        .read_Bbuff     ( read_Bbuff      ),
-        .mem_ctrl_data  ( mem_ctrl_data   ),
-        .mem_ctrl_valid ( mem_ctrl_valid  ),
-        .stackA_empty   ( stackA_empty    ),
-        .stackB_empty   ( stackB_empty    ),
-        .stackA_full    ( stackA_full     ),
-        .stackB_full    ( stackB_full     )
+        .NEURONS      ( NEURONS      ),    
+        .MUL_LAT      ( MUL_LAT      ),
+        .ADDR_W       ( ADDR_W       ),
+        .DATA_W       ( DATA_W       ),
+        .WORD_W       ( WORD_W       ),
+        .DEPTH        ( DEPTH        ),
+        .MAX_SIZE     ( MAX_SIZE     ),
+        .SYS_CLOCK    ( CLK_PER      ),
+        .MEM_LATENCY  ( MEM_LATENCY  ),
+        .V_TIME       ( V_TIME       )
+    ) DUT (
+        .clk          ( clk          ),
+        .rst_n        ( rst_n        ),
+        .enb_i        ( enb_i        ),
+        .we_i         ( we_i         ),
+        .size_i       ( size_i       ),
+        .actv_selx_i  ( actv_selx_i  ),
+        .actv_sely_i  ( actv_sely_i  )
     );
 
-    //=========================================================
-    // RESET + DEFAULTS
-    //=========================================================
+    //-----------------------------------------------------------------
+    // Clock
+    //-----------------------------------------------------------------
+    initial clk = 1'b0;
+    always #(CLK_PER/2.0) clk = ~clk;
+
+    //-----------------------------------------------------------------
+    // Dados de teste + modelo de referencia (golden)
+    //-----------------------------------------------------------------
+    shortreal W_r [NEURONS][SIZE] = '{
+        '{ 1.0,  2.0, 3.0 },
+        '{ 0.5, -1.0, 2.0 },
+        '{ 2.0,  2.0, 2.0 },
+        '{-1.0,  0.0, 4.0 }
+    };
+    shortreal X_r [SIZE] = '{ 1.0, 2.0, 3.0 };
+
+    logic [DATA_W-1:0] W_bits [NEURONS][SIZE];
+    logic [DATA_W-1:0] X_bits [SIZE];
+    logic [DATA_W-1:0] Y_exp  [NEURONS];
+
+    task automatic build_golden();
+        shortreal acc;
+        for (int j = 0; j < SIZE; j++) X_bits[j] = $shortrealtobits(X_r[j]);
+        for (int n = 0; n < NEURONS; n++) begin
+            acc = 0.0;
+            for (int j = 0; j < SIZE; j++) begin
+                W_bits[n][j] = $shortrealtobits(W_r[n][j]);
+                acc += W_r[n][j] * X_r[j];
+            end
+            Y_exp[n] = $shortrealtobits(acc);
+        end
+    endtask
+
+    //-----------------------------------------------------------------
+    // Preload das memorias (referencia hierarquica - AJUSTAR!)
+    //-----------------------------------------------------------------
+    // task automatic preload_memories();
+    //     logic [NEURONS*DATA_W-1:0] w_word;
+    //     for (int j = 0; j < SIZE; j++) begin
+    //         // palavra de pesos: [neuronio0 | neuronio1 | ...] para a entrada j
+    //         for (int n = 0; n < NEURONS; n++)
+    //             w_word[n*DATA_W +: DATA_W] = W_bits[n][j];
+    //         // >>> ajuste os nomes abaixo para o seu mem_weights / mem_actvs <<<
+    //         DUT.WEIGHT.rdata_o = w_word;
+    //         DUT.ACTV.rdata_o   = X_bits[j];
+    //     end
+    // endtask
+
+    //-----------------------------------------------------------------
+    // Captura dos resultados
+    //-----------------------------------------------------------------
+    logic [DATA_W-1:0] y_got [$];
+
+    always @(posedge clk) begin
+        if (rst_n && DUT.npu_o_valid) begin
+            y_got.push_back(DUT.actv_wdata);
+            $display("[%0t] resultado #%0d capturado: 0x%08h (%f)",
+                     $time, y_got.size()-1, DUT.actv_wdata,
+                     $bitstoshortreal(DUT.actv_wdata));
+        end
+    end
+
+    //-----------------------------------------------------------------
+    // Estimulo
+    //-----------------------------------------------------------------
+    int errors;
+    int cycles;
+
     initial begin
+        errors      = 0;
+        enb_i       = 1'b0;
+        we_i        = 1'b0;
+        size_i      = '0;
+        actv_selx_i = 1'b0;   // le do banco X
+        actv_sely_i = 1'b1;   // escreve no banco Y
+        rst_n       = 1'b0;
 
-        $display("\n==========================================================");
-        $display("    _                    _         ___                      ");
-        $display("   /_\\  _ _ __ _ _ _  __| |_  _   / __|___ _ _ ___         ");
-        $display("  / _ \\| '_/ _` | ' \\/ _` | || | | (__/ _ \\ '_/ -_)      ");
-        $display(" /_/ \\_\\_| \\__,_|_||_\\__,_|\\_,_|  \\___\\___/_| \\___| ");
-        $display("==========================================================\n");
+        build_golden();
 
-        rst_n          = 0;
-        neuron_done    = 0;
-        shift_buff     = 0;
-        buff_select    = 0;
-        input_write    = 0;
-        write_Abuff    = 0;
-        write_Bbuff    = 0;
-        read_Abuff     = 0;
-        read_Bbuff     = 0;
-        mem_ctrl_data  = 0;
-        mem_ctrl_valid = 0;
+        // Reset
+        repeat (5) @(posedge clk);
+        rst_n = 1'b1;
+        repeat (2) @(posedge clk);
 
-        repeat(5) @(posedge clk);
-        rst_n = 1;
+        // Carrega dados
+        // preload_memories();
 
-        repeat(2) @(posedge clk);
+        // Dispara a inferencia da camada (size = 3)
+        @(posedge clk);
+        size_i = SIZE[1:0];
+        enb_i  = 1'b1;
+        @(posedge clk);
+        enb_i  = 1'b0;
 
-        //=====================================================
-        // FASE 1
-        // Carrega STACK B com entradas externas
-        //=====================================================
-        $display("\n============================");
-        $display("LOAD STACK B");
-        $display("============================\n");
-
-        input_write = 1;
-
-        push_B(32'h01020304);
-        push_B(32'h11121314);
-        push_B(32'h21222324);
-        push_B(32'h31323334);
-
-        input_write = 0;
-
-        repeat(2) @(posedge clk);
-
-        //=====================================================
-        // FASE 2
-        // Consome STACK B enquanto produz resultados em A
-        //=====================================================
-        $display("\n============================");
-        $display("CONSUME B / PRODUCE A");
-        $display("============================\n");
-
-        buff_select = 1'b1;
-
-        repeat(4) begin
-
-            pop_B();
-
-            mem_ctrl_valid = 1;
-            mem_ctrl_data  = $random;
-
+        // Espera os NEURONS resultados (ou timeout)
+        cycles = 0;
+        while (y_got.size() < NEURONS && cycles < TIMEOUT) begin
             @(posedge clk);
-
-            write_Abuff = 1;
-            @(posedge clk);
-            write_Abuff = 0;
-
-            shift_bytes(4);
-
-            mem_ctrl_valid = 0;
-
-            repeat(2) @(posedge clk);
+            cycles++;
         end
 
-        //=====================================================
-        // FASE 3
-        // Troca buffers
-        //=====================================================
-        $display("\n============================");
-        $display("SWAP BUFFERS");
-        $display("============================\n");
+        repeat (5) @(posedge clk);
 
-        repeat(5) @(posedge clk);
+        // Verificacao
+        if (y_got.size() != NEURONS) begin
+            $error("Esperava %0d resultados, recebi %0d (timeout=%0d ciclos)",
+                   NEURONS, y_got.size(), cycles);
+            errors++;
+        end
 
-        //=====================================================
-        // FASE 4
-        // Consome STACK A enquanto recarrega B
-        //=====================================================
-        $display("\n============================");
-        $display("CONSUME A / RELOAD B");
-        $display("============================\n");
-
-        buff_select = 1'b0;
-        input_write = 1;
-
-        fork
-
-            begin
-                repeat(4) begin
-
-                    pop_A();
-
-                    mem_ctrl_valid = 1;
-                    mem_ctrl_data  = $random;
-
-                    @(posedge clk);
-
-                    write_Bbuff = 1;
-                    @(posedge clk);
-                    write_Bbuff = 0;
-
-                    shift_bytes(4);
-
-                    mem_ctrl_valid = 0;
-
-                    repeat(2) @(posedge clk);
-                end
+        for (int n = 0; n < y_got.size() && n < NEURONS; n++) begin
+            if (y_got[n] !== Y_exp[n]) begin
+                $error("Neuronio %0d: obtido 0x%08h (%f) | esperado 0x%08h (%f)",
+                       n, y_got[n], $bitstoshortreal(y_got[n]),
+                       Y_exp[n],   $bitstoshortreal(Y_exp[n]));
+                errors++;
+            end else begin
+                $display("Neuronio %0d OK: %f", n, $bitstoshortreal(y_got[n]));
             end
+        end
 
-            begin
-                push_B(32'hAAAA5555);
-                push_B(32'h12345678);
-                push_B(32'hCAFEBABE);
-                push_B(32'hDEADBEEF);
-            end
+        if (errors == 0) $display("\n*** TESTE PASSOU ***\n");
+        else             $display("\n*** TESTE FALHOU: %0d erro(s) ***\n", errors);
 
-        join
-
-        repeat(20) @(posedge clk);
-
-        $display("\nTB FINISHED\n");
         $finish;
     end
 
-    //=========================================================
-    // TASKS
-    //=========================================================
-    task push_A(input [31:0] data);
-    begin
-        @(posedge clk);
-        mem_ctrl_data = data;
-        write_Abuff   = 1;
-
-        @(posedge clk);
-        write_Abuff   = 0;
-
-        $display("[%0t] PUSH A = %h", $time, data);
+    // Watchdog global
+    initial begin
+        #(CLK_PER * (TIMEOUT + 100));
+        $display("WATCHDOG: simulacao excedeu o tempo limite");
+        $finish;
     end
-    endtask
-
-    task push_B(input [31:0] data);
-    begin
-        @(posedge clk);
-        mem_ctrl_data = data;
-        write_Bbuff   = 1;
-
-        @(posedge clk);
-        write_Bbuff   = 0;
-
-        $display("[%0t] PUSH B = %h", $time, data);
-    end
-    endtask
-
-    task pop_A();
-    begin
-        @(posedge clk);
-        read_Abuff = 1;
-
-        @(posedge clk);
-        read_Abuff = 0;
-
-        $display("[%0t] POP A -> %h", $time, dut.stackA_data_out);
-    end
-    endtask
-
-    task pop_B();
-    begin
-        @(posedge clk);
-        read_Bbuff = 1;
-
-        @(posedge clk);
-        read_Bbuff = 0;
-
-        $display("[%0t] POP B -> %h", $time, dut.stackB_data_out);
-    end
-    endtask
-
-    task shift_bytes(input int n);
-    begin
-        repeat(n) begin
-            @(posedge clk);
-            shift_buff = 1;
-        end
-
-        @(posedge clk);
-        shift_buff = 0;
-    end
-    endtask
-
-    //=========================================================
-    // DEBUG MONITOR
-    //=========================================================
-    always @(posedge clk) begin
-
-        if (rst_n) begin
-            $display(
-                "[%0t] sel=%0d shift=%0d A_empty=%0d B_empty=%0d actv=%h",
-                $time,
-                buff_select,
-                shift_buff,
-                stackA_empty,
-                stackB_empty,
-                dut.actv_shiftbuff
-            );
-        end
-    end
-
+    
 endmodule
-

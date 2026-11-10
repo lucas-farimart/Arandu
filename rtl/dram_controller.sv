@@ -8,12 +8,13 @@
 // Date:   18/05/2026
 //=====================================================================
 
-module mem_controller
+module dram_controller
 (
     input  logic clk,
     input  logic rst_n,
 
     input  logic        start_i,
+    input  logic        done_i,
     input  logic        enb_i,
     input  logic [15:0] base_addr_i,
     output logic [15:0] dram_addr_o,
@@ -44,8 +45,9 @@ module mem_controller
     //  STATES
     //======================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) CS <= IDLE;
-        else        CS <= NS;
+        if (!rst_n || done_i) 
+             CS <= IDLE;
+        else CS <= NS;
     end
 
     always_comb begin
@@ -62,7 +64,7 @@ module mem_controller
     //  BUFFERS ADDRESS
     //======================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) 
+        if (!rst_n || done_i || start_i) 
             current_addr <= 'h0;
         else if (dram_valid_i) 
             current_addr <= current_addr+1;
@@ -76,7 +78,7 @@ module mem_controller
     //  DOUBLE BUFFERING (PING and PONG)
     //======================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)            ping <= 'h0;
+        if (!rst_n || done_i)  ping <= 'h0;
         else if (dram_valid_i) ping <= dram_rdata_i;
     end
 
@@ -86,11 +88,8 @@ module mem_controller
     end
 
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin 
-            foreach(pong[i]) 
-            pong[i] <= 'h0;
-            // out_byte <= 'h0;
-        end
+        if (!rst_n || done_i) 
+            pong <= '{default: 0};
         else begin 
             if (ping_read) begin
                 pong[3] <= ping[31:24];
@@ -103,7 +102,6 @@ module mem_controller
                 pong[i] <= pong[i-1];
                 pong[0] <= 'h0;
                 pong[BYTES-1] <= pong[BYTES-2];    
-                // out_byte <= pong[BYTES-1];
             end
         end
     end
@@ -112,12 +110,8 @@ module mem_controller
     //  STREAM POINTER 
     //======================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) 
-            stream_ptr <= 'h0;
-        else begin
-            if(out_valid) stream_ptr <= stream_ptr+1;
-            else          stream_ptr <= 0;
-        end
+        if (!rst_n || done_i) stream_ptr <= 'h0;
+        else if(out_valid)    stream_ptr <= stream_ptr+1;
     end
 
     always_comb out_byte = pong[BYTES-1];

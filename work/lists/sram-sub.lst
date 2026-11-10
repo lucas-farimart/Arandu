@@ -1,0 +1,3 @@
+../rtl/sram_32x512_1rw.v
+../rtl/sram_subsystem.sv
+../tb/tb_sram_subsystem.sv

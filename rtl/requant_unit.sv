@@ -35,11 +35,13 @@ module requant_unit #(
     parameter OUTPUTS = 4,
     parameter SHIFT   = 7
 )(
+    input  logic clk,
+    input  logic rst_n,
     input  logic signed [31:0] acc0_i,
     input  logic signed [31:0] acc1_i,
     input  logic signed [31:0] acc2_i,
     input  logic signed [31:0] acc3_i,
-    output logic signed [31:0] neuron_pkt  
+    output logic        [31:0] neuron_pkt  
 );
 
     logic signed [7:0]  q0;
@@ -52,10 +54,10 @@ module requant_unit #(
     requant_round #( .SHIFT (7) ) req3_u ( .acc_i(acc2_i), .q_o(q2) );
     requant_round #( .SHIFT (7) ) req4_u ( .acc_i(acc3_i), .q_o(q3) );
 
-    always_ff @(posedge clk or negedge rstn) 
+    always_ff @(posedge clk or negedge rst_n) 
     begin
-        if (!rstn) neuron_pkt <= 'h0;
-        else       neuron_pkt <= {q3,q2,q1,q0};
+        if (!rst_n) neuron_pkt <= 'h0;
+        else        neuron_pkt <= {q3,q2,q1,q0};
     end
 
 endmodule

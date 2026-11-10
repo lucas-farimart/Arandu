@@ -27,6 +27,8 @@ module fsm_controller #(
     output logic        incr_layer_o,
     output logic        incr_addr_o,
     output logic        mem_enb_o,
+    output logic        neuron_enb_o,
+    output logic        input_write_o,
 
     output logic        push_a_o,
     output logic        push_b_o,
@@ -37,8 +39,9 @@ module fsm_controller #(
     output logic        rc_pop_a_o,
     output logic        rc_pop_b_o,
     output logic        rc_push_a_o,
-    output logic        rc_push_b_o
+    output logic        rc_push_b_o,
     
+    output logic        done_o
 );
 
     //==========================================================
@@ -82,8 +85,8 @@ module fsm_controller #(
                 else if(alter_read) NS = RC_POP; 
                 else                NS = RC_PUSH; 
             end
-            IS_LAST:   NS = (last_i)        ? IS_INPUT : RC_POP;
-            DONE:      NS = (!pop_result_i) ? DONE     : IDLE;
+            IS_LAST:   NS = (last_i)        ? DONE : IS_INPUT;
+            DONE:      NS = (!pop_result_i) ? IDLE : DONE;
             default:   NS = IDLE;
         endcase
     end
@@ -92,7 +95,7 @@ module fsm_controller #(
     //  Contadores 
     //==========================================================
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+        if (!rst_n || done_o) begin
             col_cnt <= 0;
             row_cnt <= 0;
         end
@@ -116,7 +119,7 @@ module fsm_controller #(
 
     // Alternadora de colunas
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) 
+        if (!rst_n || done_o) 
             alter_read <= 0;
         else begin
             case(CS)
@@ -131,7 +134,7 @@ module fsm_controller #(
 
     // Alternadora de linhas
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) 
+        if (!rst_n || done_o) 
             alter_stack <= 0;
         else if(CS==PUSH_ON) 
             alter_stack <= (all_rows) ? ~alter_stack : alter_stack;
@@ -144,8 +147,10 @@ module fsm_controller #(
     //==========================================================  
     always_comb io_enable_o   = (CS==INOUT_CFG) && mem_valid_i;
     always_comb hdn_enable_o  = (CS==MODEL_CFG) && mem_valid_i;
-    always_comb incr_layer_o  = (CS==IS_LAST) || (CS==IS_INPUT);
+    always_comb incr_layer_o  = (CS==IS_INPUT);
     always_comb incr_addr_o   = (CS==PUSH_ON);
+    always_comb input_write_o = (CS==PUSH_IN);
+    always_comb neuron_enb_o  = (CS==PUSH_IN && ~first_i);
     always_comb mem_enb_o     = io_enable_o || hdn_enable_o;
 
 
@@ -154,13 +159,17 @@ module fsm_controller #(
     //==========================================================    
     // always_comb pop_b_o     = (CS==POP_OUT && ~alter_stack) ? 1'b1 : 1'b0;
     // always_comb pop_a_o     = (CS==POP_OUT &&  alter_stack) ? 1'b1 : 1'b0;
-    always_comb push_b_o    = (CS==PUSH_ON && ~alter_stack) ? 1'b1 : 1'b0;
-    always_comb push_a_o    = (CS==PUSH_ON &&  alter_stack) ? 1'b1 : 1'b0;
+    always_comb push_a_o    =  (CS==PUSH_ON &&  alter_stack) ? 1'b1 : 1'b0;
+    always_comb push_b_o    = ((CS==PUSH_ON && ~alter_stack) || input_write_o) ? 1'b1 : 1'b0;
+
+    always_comb clean_a_o   = (CS==IDLE || CS==IS_LAST) &&  alter_stack;
+    always_comb clean_b_o   = (CS==IDLE || CS==IS_LAST) && ~alter_stack;
 
     always_comb rc_pop_a_o  = (CS==RC_POP  && ~alter_stack) ? alter_read  : 1'b0;
     always_comb rc_pop_b_o  = (CS==RC_POP  &&  alter_stack) ? alter_read  : 1'b0;
     always_comb rc_push_a_o = (CS==RC_PUSH && ~alter_stack) ? ~alter_read : 1'b0;
     always_comb rc_push_b_o = (CS==RC_PUSH &&  alter_stack) ? ~alter_read : 1'b0;
 
+    always_comb done_o = (CS==DONE);
 
 endmodule

@@ -1,4 +1,4 @@
-# SimVision Command Script (Thu Jun 11 11:27:44 -03 2026)
+# SimVision Command Script (Mon Jun 15 11:25:17 -03 2026)
 #
 # Version 23.09.s003
 #
@@ -89,6 +89,7 @@ group insert \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_read}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_rows}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_cols}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.done_o}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.NS[4:0]}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.CS[4:0]}]} ]
 group using MEM-CTRL
@@ -149,8 +150,7 @@ group insert \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_addr_i[5:0]}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_data_i[31:0]}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_18_o[17:0]}]} ] \
-    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_16_o[15:0]}]} ] \
-    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hidden_width_r[0:15]}]} ]
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_16_o[15:0]}]} ]
 group using CONTROL
 group set -overlay 0
 group set -comment {}
@@ -158,12 +158,13 @@ group clear 0 end
 
 group insert \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.w_model[7:0]}]} ] \
-    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_layers[3:0]}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.layer_counter[15:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_width_addr[5:0]}]} ] \
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_layers[3:0]}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_words_load}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_incr_layer}]} ] \
     [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_first}]} ] \
-    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_last}]} ]
+    [subst  {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.done}]} ]
 
 #
 # Mnemonic Maps
@@ -174,6 +175,18 @@ mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor or
 {%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
 {%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
 {%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Design Browser windows
+#
+if {[catch {window new WatchList -name "Design Browser 1" -geometry 730x500+261+33}] != ""} {
+    window geometry "Design Browser 1" 730x500+261+33
+}
+window target "Design Browser 1" on
+browser using {Design Browser 1}
+browser set \
+    -signalsort name
+browser timecontrol set -lock 0
 
 #
 # Waveform windows
@@ -187,7 +200,7 @@ waveform sidebar select designbrowser
 waveform set \
     -primarycursor TimeA \
     -signalnames name \
-    -signalwidth 175 \
+    -signalwidth 194 \
     -units ns \
     -valuewidth 75
 waveform baseline set -time 0
@@ -251,9 +264,11 @@ foreach {name attrs} [subst  {
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.alter_read}]} {-color #e6bede -namecolor #e6bede}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_rows}]} {-color #e6bede -namecolor #e6bede}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.all_cols}]} {-color #e6bede -namecolor #e6bede}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.done_o}]} {-color #e6bede -namecolor #e6bede}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.NS[4:0]}]} {-color #e6bede -namecolor #e6bede}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.FSM.CS[4:0]}]} {-color #e6bede -namecolor #e6bede}
 }] childcmds {
+    {}
     {}
     {}
     {}
@@ -274,9 +289,43 @@ foreach {name attrs} [subst  {
     set gpID0 [lindex $gpGlist0 0]
 }
 
-set id [waveform add -cdivider divider]
 
 set groupId0 [waveform add -groups CONTROL]
+waveform format $groupId0 -namecolor #99a999
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs} [subst  {
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.w_model[7:0]}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.layer_counter[15:0]}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_width_addr[5:0]}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_layers[3:0]}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.cfg_words_load}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_incr_layer}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.ctrl_first}]} {-color #99a999 -namecolor #99a999}
+    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.done}]} {-color #99a999 -namecolor #99a999}
+}] childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
 
 
 set groupId0 [waveform add -groups MEM-CTRL]
@@ -307,7 +356,6 @@ foreach {name attrs} [subst  {
     set gpID0 [lindex $gpGlist0 0]
 }
 
-set id [waveform add -cdivider divider]
 
 set groupId0 [waveform add -groups METADATA]
 waveform format $groupId0 -namecolor #a070ff
@@ -322,7 +370,6 @@ foreach {name attrs} [subst  {
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_data_i[31:0]}]} {-color #a070ff -namecolor #a070ff}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_18_o[17:0]}]} {-color #a070ff -namecolor #a070ff}
     {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.width_16_o[15:0]}]} {-color #a070ff -namecolor #a070ff}
-    {$dbNames(realName1)::[format {tb_ctrl.u_ctrl.metadata_u.hidden_width_r[0:15]}]} {}
 }] childcmds {
     {}
     {}
@@ -332,10 +379,6 @@ foreach {name attrs} [subst  {
     {}
     {}
     {}
-    {
-        set id $gpID0
-        waveform hierarchy collapse $id
-    }
 } {
     set expected [ join [waveform signals -format fullpath $gpID0] ]
     if {[string equal $name $expected] || $name == "cdivider"} {
@@ -416,7 +459,7 @@ foreach {name attrs} [subst  {
 waveform hierarchy collapse $groupId0
 
 
-waveform xview limits 0 10120ns
+waveform xview limits 0 13160ns
 
 #
 # Waveform Window Links
